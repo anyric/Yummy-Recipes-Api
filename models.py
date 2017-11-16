@@ -1,56 +1,34 @@
-from flask_sqlalchemy import SQLAlchemy
-import datetime
+"""module to create data models"""
 
-database = SQLAlchemy()
+from app import db
 
-class BaseDataModel(database.Model):
-    """Base data model from which other models inherit"""
-    __abstract__ = True
-
-    def __init__(self, *args):
-        super().__init__(*args)
-
-    def __repr__(self):
-        """Define a base way to print models"""
-        return '%s(%s)' % (self.__class__.__name__, {
-            column: value
-            for column, value in self._to_dict().items()
-        })
-
-    def json(self):
-        """
-                Define a base way to jsonify models, dealing with datetime objects
-        """
-        return {
-            column: value if not isinstance(value, datetime.date) else value.strftime('%Y-%m-%d')
-            for column, value in self._to_dict().items()
-        }
-
-
-
-class User(BaseDataModel, database.Model):
-    """Model for the users table"""
+#db = SQLAlchemy(app)
+class Users(db.Model):
+    """model to store user details """
     __tablename__ = 'users'
 
-    id = database.Column(database.Integer, primary_key = True)
-    name = database.Column(database.varchar)
-    username = database.Column(database.varchar)
-    password = database.Column(database.password)
+    id = db.Column(db.Integer, primary_key=True)
+    firtname = db.Column(db.String(10), nullable=False)
+    lastname = db.Column(db.String(10), nullable=False)
+    username = db.Column(db.String(15), nullable=False)
+    password = db.Column(db.String(10), nullable=False)
 
 
-class Category(BaseDataModel, database.Model):
-    """Model for the category table"""
+class Category(db.Model):
+    """model to store recipe categroy"""
     __tablename__ = 'category'
 
-    id = database.Column(database.Integer, primary_key = True)
-    categoryname = database.Column(database.varchar)
-    description = database.Column(database.varchar)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(15), nullable=False)
+    description = db.Column(db.String(60), nullable=False)
+    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
 
 
-class Recipe(BaseDataModel, database.Model):
-    """Model for the recipe table"""
-    __tablename__ = 'recipe'
+class Recipe(db.Model):
+    """model to store recipes"""
+    __tablename__ = 'recipes'
 
-    id = database.Column(database.Integer, primary_key = True)
-    recipename = database.Column(database.varchar)
-    description = database.Column(database.varchar)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(15), nullable=False)
+    description = db.Column(db.String(60), nullable=False)
+    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
