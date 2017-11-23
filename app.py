@@ -1,7 +1,7 @@
 """main module that runs the application"""
-from flask import Flask, jsonify, make_response, request, url_for, abort, g
+from flask import Flask, jsonify, request, url_for, abort, g
 from flask_sqlalchemy import SQLAlchemy
-from controller import createuser, getuser, createcategory, viewcategory, createrecipe, viewrecipe
+from controller import createuser, getuser, createcategory, getcategory, updatecategory, viewcategory, deletecategory, createrecipe, viewrecipe, getrecipe, updaterecipe, deleterecipe
 from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
@@ -13,14 +13,13 @@ auth = HTTPBasicAuth()
 db = SQLAlchemy(app)
 
 
-
 @app.route('/recipe/api/v1.0/user', methods = ['POST'])
 def new_user():
     """function to create new user"""
-    firstname = request.json.get('firstname')
-    lastname = request.json.get('lastname')
-    username = request.json.get('username')
-    password = request.json.get('password')
+    firstname = request.json.get('firstname', "")
+    lastname = request.json.get('lastname', "")
+    username = request.json.get('username', "")
+    password = request.json.get('password', "")
 
     if username is None or password is None:
         abort(400)
@@ -43,13 +42,6 @@ def verify_password(username, password):
     return True
 
 
-
-@auth.error_handler
-def unauthorized():
-    """function to display error message to users """
-    return make_response(jsonify({'error': 'Unauthorized access'}), 401)
-
-
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
 @auth.login_required
 def new_category():
@@ -61,8 +53,13 @@ def new_category():
     if category_name is None or description is None:
         abort(400)
 
-    createcategory(user_id, category_name, description)
-    category = viewcategory(user_id)
+    category = getcategory(category_name)
+    if category is not None:
+        updatecategory(category, category_name, description)
+        category = viewcategory(user_id)
+    else:
+        createcategory(user_id, category_name, description)
+        category = viewcategory(user_id)
 
     return jsonify({'category': category}), 201, {'Location': url_for('view_category', id=category.id, _external=True)}
 
@@ -71,6 +68,18 @@ def new_category():
 @auth.login_required
 def view_category():
     """function to query recipe category of a user"""
+    user = getuser(g.user.username)
+    category = viewcategory(user.user_id)
+    return jsonify({'category': category})
+
+
+@app.route('/recipe/api/v1.0/categoryname', methods=['POST'])
+@auth.login_required
+def delete_category():
+    """function to delete recipe category of a user"""
+    category_name = request.json.get('categoryname')
+    deleterecipe(category_name)
+
     user = getuser(g.user.username)
     category = viewcategory(user.user_id)
     return jsonify({'category': category})
@@ -87,8 +96,14 @@ def new_recipe():
     if recipe_name is None or description is None:
         abort(400)
 
-    createrecipe(user_id, recipe_name, description)
-    recipe = viewrecipe(user_id)
+    recipe = getrecipe(recipe_name)
+    if recipe is not None:
+        updaterecipe(recipe, recipe_name, description)
+        recipe = viewrecipe(user_id)
+
+    else:
+        createrecipe(user_id, recipe_name, description)
+        recipe = viewrecipe(user_id)
 
     return jsonify({'recipe': recipe}), 201, {'Location': url_for('view_recipe', id=recipe.id, _external=True)}
 
@@ -99,8 +114,19 @@ def view_recipe():
     """function to recipe category of a user"""
     user = getuser(g.user.username)
     recipe = viewrecipe(user.user_id)
-    return jsonify({'category': recipe})
+    return jsonify({'recipe': recipe})
 
+
+@app.route('/recipe/api/v1.0/recipename', methods=['POST'])
+@auth.login_required
+def delete_recipe():
+    """function to delete recipe of a user"""
+    recipe_name = request.json.get('recipename')
+    deleterecipe(recipe_name)
+
+    user = getuser(g.user.username)
+    recipe = viewrecipe(user.user_id)
+    return jsonify({'recipe': recipe})
 
 
 if __name__ == '__main__':

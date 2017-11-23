@@ -27,12 +27,20 @@ def viewcategory(user_id):
     category = Category.query.filter(user_id=user_id).all()
     return category
 
-def updatecategory(category_id, name, description):
-    """function to update category details"""
-    category_item = Category.query.get(category_id)
+
+def getcategory(name):
+    """function to get recipe category"""
+    category = Category.query.get(name)
+    return category
+
+
+def updatecategory(category, name, decription):
+    """function to uodate category details"""
+    category_item = Category.query.get(category.id)
     category_item.name = name
-    category_item.description = description
+    category_item.description = decription
     db.session.commit()
+
 
 def deletecategory(name):
     """function to delete a category in database"""
@@ -53,12 +61,19 @@ def viewrecipe(user_id):
     recipe = Recipe.query.filter(user_id=user_id).all()
     return recipe
 
-def updaterecipe(recipe_id, name, description):
-    """function to update recipe details"""
-    recipe_item = Category.query.get(recipe_id)
+def getrecipe(name):
+    """function to get recipe"""
+    recipe = Recipe.query.get(name)
+    return recipe
+
+
+def updaterecipe(recipe, name, decription):
+    """function to uodate recipe details"""
+    recipe_item = Recipe.query.get(recipe.id)
     recipe_item.name = name
-    recipe_item.description = description
+    recipe_item.description = decription
     db.session.commit()
+
 
 def deleterecipe(name):
     """function to delete a recipe in database"""
