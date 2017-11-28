@@ -12,7 +12,7 @@ def createuser(firstname, lastname, username, password):
     db.session.commit()
 
 def getuser(username):
-    """function to get login user id"""
+    """function to get login user"""
     user = Users.query.filter_by(username=username).first_or_404()
     return user
 
@@ -24,13 +24,17 @@ def createcategory(user_id, name, description):
 
 def viewcategory(user_id):
     """function to view user recipe category"""
-    category = Category.query.filter(user_id=user_id).all()
-    return category
+    categories = Category.query.filter_by(user_id=user_id)
+    results = []
+    for category in categories:
+        result = dict(category_name=category.name, category_id=category.id)
+        results.append(result)
+    return results
 
 
 def getcategory(name):
     """function to get recipe category"""
-    category = Category.query.get(name)
+    category = Category.query.filter_by(name=name).first_or_404()
     return category
 
 
@@ -58,12 +62,16 @@ def createrecipe(user_id, name, description):
 
 def viewrecipe(user_id):
     """function to view user recipe"""
-    recipe = Recipe.query.filter(user_id=user_id).all()
-    return recipe
+    recipes = Recipe.query.filter_by(user_id=user_id)
+    results = []
+    for recipe in recipes:
+        result = dict(recipe_name=recipe.name, recipe_id=recipe.id)
+        results.append(result)
+    return results
 
 def getrecipe(name):
     """function to get recipe"""
-    recipe = Recipe.query.get(name)
+    recipe = Recipe.query.filter_by(name=name).first_or_404()
     return recipe
 
 
@@ -80,4 +88,3 @@ def deleterecipe(name):
     recipe = Recipe.query.filter_by(name=name).first()
     db.session.delete(recipe)
     db.session.commit()
-#createuser('Richard', 'Anyama', 'cooldad', 'colpass')

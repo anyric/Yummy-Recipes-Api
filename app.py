@@ -1,7 +1,7 @@
 """main module that runs the application"""
-from flask import Flask, jsonify, request, url_for, abort, g
+from flask import Flask, jsonify, request, url_for, abort, g, render_template, make_response, json
 from flask_sqlalchemy import SQLAlchemy
-from controller import createuser, getuser, createcategory, getcategory, updatecategory, viewcategory, deletecategory, createrecipe, viewrecipe, getrecipe, updaterecipe, deleterecipe
+from controller import * #createuser, getuser, createcategory, getcategory, updatecategory, viewcategory, deletecategory, createrecipe, viewrecipe, getrecipe, updaterecipe, deleterecipe
 from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
@@ -21,15 +21,11 @@ def new_user():
     username = request.json.get('username', "")
     password = request.json.get('password', "")
 
-    if username is None or password is None:
-        abort(400)
-    if getuser(username) is not None:
-        abort(400)
+    if firstname.strip() and lastname.strip() and username.strip() and password.strip():
+        createuser(firstname, lastname, username, password)
 
-    createuser(firstname, lastname, username, password)
     user = getuser(username)
-
-    return jsonify({'username': user.username}), 201, {'Location': url_for('get_user', id=user.id, _external=True)}
+    return jsonify({'username': user.username})
 
 
 @auth.verify_password
@@ -41,6 +37,10 @@ def verify_password(username, password):
     g.user = user
     return True
 
+@app.errorhandler(404)
+def not_found(error):
+    """function to format error response"""
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
 @auth.login_required
@@ -48,41 +48,52 @@ def new_category():
     """function to create new recipe category of a user"""
     category_name = request.json.get('name')
     description = request.json.get('description')
-    user_id = g.user.user_id
+    user_id = g.user.id
 
-    if category_name is None or description is None:
-        abort(400)
+    if category_name.strip() and description.strip():
 
-    category = getcategory(category_name)
-    if category is not None:
-        updatecategory(category, category_name, description)
-        category = viewcategory(user_id)
-    else:
         createcategory(user_id, category_name, description)
         category = viewcategory(user_id)
 
-    return jsonify({'category': category}), 201, {'Location': url_for('view_category', id=category.id, _external=True)}
+    return jsonify({'category': dict(category_name=category)})
 
 
-@app.route('/recipe/api/v1.0/categories', methods=['GET'])
+@app.route('/recipe/api/v1.0/category', methods=['PUT'])
+@auth.login_required
+def update_category():
+    """function to update recipe category of a user"""
+    category_name = request.json.get('name')
+    description = request.json.get('description')
+    user_id = g.user.id
+
+    if category_name.strip() and description.strip():
+        category = getcategory(category_name)
+        updatecategory(category, category_name, description)
+        category = viewcategory(user_id)
+
+    return jsonify({'category': dict(category_name=category)})
+
+@app.route('/recipe/api/v1.0/category', methods=['GET'])
 @auth.login_required
 def view_category():
     """function to query recipe category of a user"""
     user = getuser(g.user.username)
-    category = viewcategory(user.user_id)
-    return jsonify({'category': category})
+    category = viewcategory(user.id)
+    return jsonify({'category': dict(category_name=category)})
 
-
-@app.route('/recipe/api/v1.0/categoryname', methods=['POST'])
+@app.route('/recipe/api/v1.0/categoryname', methods=['DELETE'])
 @auth.login_required
 def delete_category():
     """function to delete recipe category of a user"""
     category_name = request.json.get('categoryname')
-    deleterecipe(category_name)
+    if category_name is not None:
+        deleterecipe(category_name)
+    else:
+        abort(404)
 
     user = getuser(g.user.username)
     category = viewcategory(user.user_id)
-    return jsonify({'category': category})
+    return jsonify({'category': dict(category_name=category)})
 
 
 @app.route('/recipe/api/v1.0/recipe', methods=['POST'])
@@ -93,20 +104,26 @@ def new_recipe():
     description = request.json.get('description')
     user_id = g.user.user_id
 
-    if recipe_name is None or description is None:
-        abort(400)
-
-    recipe = getrecipe(recipe_name)
-    if recipe is not None:
-        updaterecipe(recipe, recipe_name, description)
-        recipe = viewrecipe(user_id)
-
-    else:
+    if recipe_name.strip() and description.strip():
         createrecipe(user_id, recipe_name, description)
         recipe = viewrecipe(user_id)
 
-    return jsonify({'recipe': recipe}), 201, {'Location': url_for('view_recipe', id=recipe.id, _external=True)}
+    return jsonify({'recipe': dict(recipe_name=recipe)})
 
+@app.route('/recipe/api/v1.0/recipe', methods=['PUT'])
+@auth.login_required
+def update_recipe():
+    """function to update recipe of a user"""
+    recipe_name = request.json.get('name')
+    description = request.json.get('description')
+    user_id = g.user.id
+
+    if recipe_name.strip() and description.strip():
+        recipe = getcategory(recipe_name)
+        updaterecipe(recipe, recipe_name, description)
+        recipe = viewrecipe(user_id)
+
+    return jsonify({'recipe': dict(recipe_name=recipe)})
 
 @app.route('/recipe/api/v1.0/recipes', methods=['GET'])
 @auth.login_required
@@ -114,10 +131,10 @@ def view_recipe():
     """function to recipe category of a user"""
     user = getuser(g.user.username)
     recipe = viewrecipe(user.user_id)
-    return jsonify({'recipe': recipe})
+    return jsonify({'recipe': dict(recipe_name=recipe)})
 
 
-@app.route('/recipe/api/v1.0/recipename', methods=['POST'])
+@app.route('/recipe/api/v1.0/recipename', methods=['DELETE'])
 @auth.login_required
 def delete_recipe():
     """function to delete recipe of a user"""
@@ -126,7 +143,7 @@ def delete_recipe():
 
     user = getuser(g.user.username)
     recipe = viewrecipe(user.user_id)
-    return jsonify({'recipe': recipe})
+    return jsonify({'recipe': dict(recipe_name=recipe)})
 
 
 if __name__ == '__main__':

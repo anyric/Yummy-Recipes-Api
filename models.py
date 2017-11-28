@@ -19,7 +19,7 @@ class Users(db.Model):
         self.password = password
 
     def __repr__(self):
-        return '<username {}'.format(self.username)
+        return 'username {}'.format(self.username)
 
 
 class Category(db.Model):
@@ -37,7 +37,7 @@ class Category(db.Model):
         self.description = description
 
     def __repr__(self):
-        return '<title {}'.format(self.name)
+        return 'name {}'.format(self.name)
 
 
 class Recipe(db.Model):
@@ -55,4 +55,4 @@ class Recipe(db.Model):
         self.description = description
 
     def __repr__(self):
-        return '<title {}'.format(self.name)
+        return 'name {}'.format(self.name)
