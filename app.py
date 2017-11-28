@@ -62,13 +62,14 @@ def new_category():
 @auth.login_required
 def update_category():
     """function to update recipe category of a user"""
-    category_name = request.json.get('name')
+    category_old_name = request.json.get('old_name')
+    category_new_name = request.json.get('new_name')
     description = request.json.get('description')
     user_id = g.user.id
 
-    if category_name.strip() and description.strip():
-        category = getcategory(category_name)
-        updatecategory(category, category_name, description)
+    if category_old_name.strip() and category_old_name.strip() and description.strip():
+        category = getcategory(category_old_name)
+        updatecategory(category, category_new_name, description)
         category = viewcategory(user_id)
 
     return jsonify({'category': dict(category_name=category)})
@@ -81,18 +82,18 @@ def view_category():
     category = viewcategory(user.id)
     return jsonify({'category': dict(category_name=category)})
 
-@app.route('/recipe/api/v1.0/categoryname', methods=['DELETE'])
+@app.route('/recipe/api/v1.0/category', methods=['DELETE'])
 @auth.login_required
 def delete_category():
     """function to delete recipe category of a user"""
     category_name = request.json.get('categoryname')
     if category_name is not None:
-        deleterecipe(category_name)
+        deletecategory(category_name)
     else:
         abort(404)
 
     user = getuser(g.user.username)
-    category = viewcategory(user.user_id)
+    category = viewcategory(user.user.id)
     return jsonify({'category': dict(category_name=category)})
 
 
@@ -114,13 +115,14 @@ def new_recipe():
 @auth.login_required
 def update_recipe():
     """function to update recipe of a user"""
-    recipe_name = request.json.get('name')
+    recipe_old_name = request.json.get('old_name')
+    recipe_new_name = request.json.get('new_name')
     description = request.json.get('description')
     user_id = g.user.id
 
-    if recipe_name.strip() and description.strip():
-        recipe = getcategory(recipe_name)
-        updaterecipe(recipe, recipe_name, description)
+    if recipe_old_name.strip() and recipe_new_name.strip() and description.strip():
+        recipe = getcategory(recipe_old_name)
+        updaterecipe(recipe, recipe_new_name, description)
         recipe = viewrecipe(user_id)
 
     return jsonify({'recipe': dict(recipe_name=recipe)})
@@ -134,15 +136,18 @@ def view_recipe():
     return jsonify({'recipe': dict(recipe_name=recipe)})
 
 
-@app.route('/recipe/api/v1.0/recipename', methods=['DELETE'])
+@app.route('/recipe/api/v1.0/recipe', methods=['DELETE'])
 @auth.login_required
 def delete_recipe():
     """function to delete recipe of a user"""
     recipe_name = request.json.get('recipename')
-    deleterecipe(recipe_name)
+    if recipe_name is not None:
+        deleterecipe(recipe_name)
+    else:
+        abort(404)
 
     user = getuser(g.user.username)
-    recipe = viewrecipe(user.user_id)
+    recipe = viewrecipe(user.user.id)
     return jsonify({'recipe': dict(recipe_name=recipe)})
 
 

@@ -27,7 +27,7 @@ def viewcategory(user_id):
     categories = Category.query.filter_by(user_id=user_id)
     results = []
     for category in categories:
-        result = dict(category_name=category.name, category_id=category.id)
+        result = dict(category_name=category.name, category_id=category.id, category_description=category.description, user=user_id)
         results.append(result)
     return results
 
