@@ -19,7 +19,7 @@ class Users(db.Model):
         self.password = password
 
     def __repr__(self):
-        return '<username {}'.format(self.username)
+        return 'username {}'.format(self.username)
 
 
 class Category(db.Model):
@@ -37,7 +37,7 @@ class Category(db.Model):
         self.description = description
 
     def __repr__(self):
-        return '<title {}'.format(self.name)
+        return 'name {}'.format(self.name)
 
 
 class Recipe(db.Model):
@@ -47,12 +47,12 @@ class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(15), nullable=False)
     description = db.Column(db.String(60), nullable=False)
-    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
+    category_id = db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
 
-    def __init__(self, user_id, name, description):
-        self.user_id = user_id
+    def __init__(self, category_id, name, description):
+        self.category_id = category_id
         self.name = name
         self.description = description
 
     def __repr__(self):
-        return '<title {}'.format(self.name)
+        return 'name {}'.format(self.name)
