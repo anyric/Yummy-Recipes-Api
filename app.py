@@ -1,7 +1,9 @@
 """main module that runs the application"""
 from flask import Flask, jsonify, request, url_for, abort, g, render_template, make_response, json
 from flask_sqlalchemy import SQLAlchemy
-from controller import * #createuser, getuser, createcategory, getcategory, updatecategory, viewcategory, deletecategory, createrecipe, viewrecipe, getrecipe, updaterecipe, deleterecipe
+from user import User
+from category import Category
+from recipe import Recipe
 from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
