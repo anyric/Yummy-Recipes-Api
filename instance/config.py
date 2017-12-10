@@ -1,19 +1,18 @@
 """module for app configurations"""
-import os
 
 class Config(object):
     """Parent configuration class."""
     DEBUG = False
     CSRF_ENABLED = True
-    SECRET = os.getenv('SECRET')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SECRET = 'this-is-a-string-to-represent-scret-key'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/yummy_api'
 
 class DevelopmentConfig(Config):
     """Configurations for Development."""
     DEBUG = True
 
 class TestingConfig(Config):
-    """Configurations for Testing, with a separate test database."""
+    """Configurations for test database."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
     DEBUG = True

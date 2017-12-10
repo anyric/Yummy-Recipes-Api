@@ -1,6 +1,5 @@
 """ module to manage recipe"""
 from app import db
-#from apps import models
 
 class Recipe(db.Model):
     """model to store recipes"""
@@ -22,7 +21,7 @@ class Recipe(db.Model):
         db.session.commit()
 
     @staticmethod
-    def getcategory():
+    def getrecipe():
         """method to retrieve recipe"""
         recipe = Recipe.query.all()
         return recipe
