@@ -15,7 +15,7 @@ auth = HTTPBasicAuth()
 db = SQLAlchemy(app)
 
 
-@app.route('/recipe/api/v1.0/user', methods = ['POST'])
+@app.route('/recipe/api/v1.0/user', methods=['POST'])
 def new_user():
     """function to create new user"""
     firstname = request.json.get('firstname', "")
@@ -70,7 +70,7 @@ def new_category():
 
 @app.route('/recipe/api/v1.0/category/', methods=['PUT'])
 @auth.login_required
-def update_category(id, **kwargs):
+def update_category():
     """function to update recipe category of a user"""
     category_old_name = request.json.get('old_name')
     category_new_name = request.json.get('new_name')
@@ -78,7 +78,7 @@ def update_category(id, **kwargs):
     user_id = g.user.id
 
     if category_old_name.strip() and category_new_name.strip() and description.strip():
-        category = Category.query.filter_by(id=id).first()
+        category = Category.query.filter_by(name=category_old_name).first()
 
         category.name = category_new_name
         category.description = description

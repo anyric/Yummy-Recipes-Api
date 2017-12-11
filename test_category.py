@@ -4,7 +4,7 @@ import json
 from app import app, db
 
 class CategoryTestCase(unittest.TestCase):
-    """This class represents the bucketlist test case"""
+    """This class represents the category test case"""
 
     def setUp(self):
         """Define test variables and initialize app."""
