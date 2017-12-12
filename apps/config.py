@@ -1,10 +1,14 @@
 """module for app configurations"""
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     """Parent configuration class."""
     DEBUG = False
+    TESTING = False
     CSRF_ENABLED = True
-    SECRET = 'this-is-a-string-to-represent-scret-key'
+    SECRET = 'this string represents scret key'
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/yummy_api'
 
 class DevelopmentConfig(Config):

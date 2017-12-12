@@ -1,4 +1,4 @@
 """test for category.py"""
 import unittest
 import json
-from app import app, db
+from apps import app, db

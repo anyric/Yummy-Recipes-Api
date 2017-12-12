@@ -1,5 +1,5 @@
 """ module to manage category"""
-from app import db
+from apps import db
 
 class Category(db.Model):
     """model to store recipe categroy"""
@@ -21,10 +21,23 @@ class Category(db.Model):
         db.session.commit()
 
     @staticmethod
-    def getcategory():
+    def getcategory(user_id):
         """method to retrieve category"""
-        category = Category.query.all()
-        return category
+        categories = Category.query.filter_by(user_id=user_id)
+        results = []
+        
+        for categorylist in categories:
+            obj = {
+                    'id': categorylist.id,
+                    'name': categorylist.name,
+                    'user': categorylist.user_id,
+                    'description': categorylist.description
+                }
+            results.append(obj)
+            #response = jsonify(results)
+
+        return results#response
+        
 
     def delete(self):
         """method to delete a category"""
