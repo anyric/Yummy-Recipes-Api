@@ -1,5 +1,5 @@
 """ module to manage recipe"""
-from app import db
+from apps import db
 
 class Recipe(db.Model):
     """model to store recipes"""

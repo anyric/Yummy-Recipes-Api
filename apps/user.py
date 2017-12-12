@@ -1,5 +1,5 @@
 """ module to manage users"""
-from app import db
+from apps import db
 
 class Users(db.Model):
     """model to store user details """
@@ -25,8 +25,21 @@ class Users(db.Model):
     @staticmethod
     def getusers():
         """method to retrieve users"""
-        user = Users.query.all()
-        return user
+        userlist = Users.query.all()
+        results = []
+        
+        for user in userlist:
+            obj = {
+                    'id': user.id,
+                    'firstname': user.firstname,
+                    'lastname':user.lastname,
+                    'username': user.username,
+                }
+            results.append(obj)
+            #response = jsonify(results)
+
+        return results#response
+    
 
     def delete(self):
         """method to delete a user"""
