@@ -25,19 +25,17 @@ class Category(db.Model):
         """method to retrieve category"""
         categories = Category.query.filter_by(user_id=user_id)
         results = []
-        
+
         for categorylist in categories:
             obj = {
-                    'id': categorylist.id,
-                    'name': categorylist.name,
-                    'user': categorylist.user_id,
-                    'description': categorylist.description
+                'id': categorylist.id,
+                'name': categorylist.name,
+                'user': categorylist.user_id,
+                'description': categorylist.description
                 }
             results.append(obj)
-            #response = jsonify(results)
 
-        return results#response
-        
+        return results
 
     def delete(self):
         """method to delete a category"""

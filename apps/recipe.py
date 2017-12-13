@@ -1,19 +1,19 @@
 """ module to manage recipe"""
 from apps import db
-
+from apps.category import Category
 class Recipe(db.Model):
     """model to store recipes"""
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(15), nullable=False)
-    description = db.Column(db.String(60), nullable=False)
+    incredients = db.Column(db.String(60), nullable=False)
     category_id = db.Column('category_id', db.Integer, db.ForeignKey('category.id'))
 
-    def __init__(self, category_id, name, description):
+    def __init__(self, category_id, name, incredients):
         self.category_id = category_id
         self.name = name
-        self.description = description
+        self.incredients = incredients
 
     def save(self):
         """method to store new recipe"""
@@ -21,10 +21,22 @@ class Recipe(db.Model):
         db.session.commit()
 
     @staticmethod
-    def getrecipe():
+    def getrecipe(category_id):
         """method to retrieve recipe"""
-        recipe = Recipe.query.all()
-        return recipe
+        recipes = Recipe.query.filter_by(category_id=category_id).first()
+        category = Category.query.filter_by(id=category_id).first()
+        results = []
+
+        for recipe in recipes:
+            obj = {
+                'id': recipe.id,
+                'name': recipe.name,
+                'category': category.name,
+                'incredients': recipe.incredients
+                }
+            results.append(obj)
+
+        return results
 
     def delete(self):
         """method to delete a recipe"""
