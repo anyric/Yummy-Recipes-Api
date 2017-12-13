@@ -1,4 +1,5 @@
 """main module that runs the application"""
+from datetime import datetime
 from apps import app, auth
 from flask import request, abort, jsonify, g, make_response
 from apps.user import Users
@@ -52,13 +53,14 @@ def new_category():
     category_name = str(request.json.get('name', '')).strip()
     description = str(request.json.get('description', '')).strip()
     user_id = g.user.id
+    date_modified = datetime.utcnow()
 
     if category_name and description:
 
-        category = Category(user_id, category_name, description)
+        category = Category(user_id, category_name, description, date_modified)
         category.save()
 
-        response = jsonify(category)
+        response = jsonify({"message":"category {} was added successfully!".format(category.name) })
         response.status_code = 201
     else:
         response = jsonify({"message":"Please enter all details!"})
@@ -101,7 +103,7 @@ def view_category():
     user = Users.query.filter_by(username=g.user.username).first()
 
     categorylists = Category.getcategory(user.id)
-    if categorylists:
+    if categorylists is not None:
         response = jsonify(categorylists)
         response.status_code = 200
     else:
@@ -131,10 +133,11 @@ def new_recipe():
     """function to create new recipe of a user"""
     recipe_name = str(request.json.get('name', '')).strip()
     incredients = str(request.json.get('incredients', '')).strip()
-    category_id = str(request.json.get('category_id', '')).strip()
+    category_id = int(request.json.get('category_id', ''))
+    date_modified = datetime.utcnow()
 
-    if recipe_name and incredients and category_id:
-        recipe = Recipe(category_id, recipe_name, incredients)
+    if recipe_name and incredients and category_id > 0:
+        recipe = Recipe(category_id, recipe_name, incredients, date_modified)
         recipe.save()
         response = jsonify({"message": "recipe {} was added successfully!".format(recipe.name)})
         response.status_code = 201
@@ -148,13 +151,13 @@ def new_recipe():
 def update_recipe(recipe_id):
     """function to update recipe of a user"""
     recipe_name = str(request.json.get('name', '')).strip()
-    incredients = str(request.json.get('incredients', '')).strip()
+    ingredients = str(request.json.get('ingredients', '')).strip()
 
     recipe = Recipe.query.filter_by(id=recipe_id).first()
 
-    if recipe:
+    if recipe is not None:
         recipe.name = recipe_name
-        recipe.incredients = incredients
+        recipe.ingredients = ingredients
         recipe.save()
         response = jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)})
         response.status_code = 201
@@ -163,11 +166,11 @@ def update_recipe(recipe_id):
 
     return response
 
-@app.route('/recipe/api/v1.0/recipes/<int:category_id>', methods=['GET'])
+@app.route('/recipe/api/v1.0/recipe/<int:category_id>', methods=['GET'])
 @auth.login_required
 def view_recipe(category_id):
     """function to recipe category of a user"""
-    recipelists = Recipe.query.filter_by(category_id=category_id).first()
+    recipelists = Recipe.getrecipe(category_id)
 
     if recipelists:
         response = jsonify(recipelists)
@@ -187,7 +190,7 @@ def delete_recipe(recipe_id):
         abort(404)
     else:
         recipe.delete()
-        response = {"message": "recipe {} deleted successfully!".format(recipe.id)}, 200
+        response = {"message": "recipe {} deleted successfully!".format(recipe_id)}, 200
     return response
 
 if __name__ == '__main__':

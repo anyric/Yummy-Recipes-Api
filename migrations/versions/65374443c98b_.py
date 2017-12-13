@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: ea54c603d5d5
+Revision ID: 65374443c98b
 Revises: 
-Create Date: 2017-12-12 18:51:39.138014
+Create Date: 2017-12-13 18:53:01.883847
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'ea54c603d5d5'
+revision = '65374443c98b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,17 +28,19 @@ def upgrade():
     )
     op.create_table('category',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=15), nullable=False),
-    sa.Column('description', sa.String(length=60), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('description', sa.String(length=500), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('date_modified', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('recipes',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=15), nullable=False),
-    sa.Column('description', sa.String(length=60), nullable=False),
+    sa.Column('name', sa.String(length=100), nullable=False),
+    sa.Column('ingredients', sa.String(length=500), nullable=False),
     sa.Column('category_id', sa.Integer(), nullable=True),
+    sa.Column('date_modified', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
