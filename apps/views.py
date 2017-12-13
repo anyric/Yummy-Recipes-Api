@@ -1,6 +1,6 @@
 """main module that runs the application"""
 from apps import app, auth
-from flask import request, abort, jsonify, g
+from flask import request, abort, jsonify, g, make_response
 from apps.user import Users
 from apps.category import Category
 from apps.recipe import Recipe
@@ -8,12 +8,12 @@ from apps.recipe import Recipe
 @app.route('/recipe/api/v1.0/user', methods=['POST'])
 def new_user():
     """function to create new user"""
-    firstname = request.json.get('firstname', "")
-    lastname = request.json.get('lastname', "")
-    username = request.json.get('username', "")
-    password = request.json.get('password', "")
+    firstname = str(request.json.get('firstname', "")).strip()
+    lastname = str(request.json.get('lastname', "")).strip()
+    username = str(request.json.get('username', "")).strip()
+    password = str(request.json.get('password', "")).strip()
 
-    if firstname.strip() and lastname.strip() and username.strip() and password.strip():
+    if firstname and lastname and username and password:
         user = Users(firstname, lastname, username, password)
         user.save()
     return jsonify({'username': user.username})
@@ -36,8 +36,6 @@ def verify_password(username, password):
     user = Users.query.filter_by(username=username).first()
 
     if not user or not user.password == password:
-        print("******************")
-        print(user.password)
         return False
     g.user = user
     return True
@@ -51,40 +49,48 @@ def not_found():
 @auth.login_required
 def new_category():
     """function to create new recipe category of a user"""
-    category_name = request.json.get('name')
-    description = request.json.get('description')
+    category_name = str(request.json.get('name', '')).strip()
+    description = str(request.json.get('description', '')).strip()
     user_id = g.user.id
 
-    if category_name.strip() and description.strip():
+    if category_name and description:
 
         category = Category(user_id, category_name, description)
         category.save()
 
-    response = jsonify(category)
-    response.status_code = 201
+        response = jsonify(category)
+        response.status_code = 201
+    else:
+        response = jsonify({"message":"Please enter all details!"})
+        response.status_code = 200
 
     return response
 
 
-@app.route('/recipe/api/v1.0/category/', methods=['PUT'])
+@app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['PUT'])
 @auth.login_required
-def update_category():
+def update_category(category_id):
     """function to update recipe category of a user"""
-    category_old_name = request.json.get('old_name')
-    category_new_name = request.json.get('new_name')
-    description = request.json.get('description')
-    user_id = g.user.id
 
-    if category_old_name.strip() and category_new_name.strip() and description.strip():
-        category = Category.query.filter_by(name=category_old_name).first()
+    category_name = str(request.json.get('name', '')).strip()
+    description = str(request.json.get('description', '')).strip()
 
-        category.name = category_new_name
+    category = Category.query.filter_by(id=category_id).first()
+
+    if not category:
+        abort(404)
+
+    elif category_name and description:
+
+        category.name = category_name
         category.description = description
         category.save()
         
-        #categorylists = Category.getcategory(user.id)
-        response = jsonify(category)
+        response = jsonify({"message": "category {} was updated successfully".format(category.id)})
         response.status_code = 201
+    else:
+        response = jsonify({"message": "Please enter new details!"})
+        response.status_code = 200
 
     return response
 
@@ -95,104 +101,93 @@ def view_category():
     user = Users.query.filter_by(username=g.user.username).first()
 
     categorylists = Category.getcategory(user.id)
-    response = jsonify(categorylists)
-    response.status_code = 200
-
-    return response
-
-
-@app.route('/recipe/api/v1.0/category/', methods=['DELETE'])
-@auth.login_required
-def delete_category():
-    """function to delete recipe category of a user"""
-    category_name = request.json.get('categoryname')
-    if category_name is not None:
-        category = Category.query.filter_by(name=category_name).first()
-        category.delete()
+    if categorylists:
+        response = jsonify(categorylists)
+        response.status_code = 200
     else:
-        abort(404)
+        response = jsonify({"message": "No category added yet!"})
+        response.status_code = 200
 
-    response = {"message": "category {} deleted successfully".format(category_name)}, 200
     return response
+
+
+@app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
+@auth.login_required
+def delete_category(category_id):
+    """function to delete recipe category of a user"""
+    category = Category.query.filter_by(id=category_id).first()
+    if not category:
+        abort(404)
+    else:
+        category.delete()
+        response = jsonify({"message": "category {} was deleted successfully".format(category.name)})
+        response.status_code = 200
+        return response
 
 
 @app.route('/recipe/api/v1.0/recipe', methods=['POST'])
 @auth.login_required
 def new_recipe():
     """function to create new recipe of a user"""
-    recipe_name = request.json.get('name')
-    description = request.json.get('description')
-    category_id = request.json.get('category_id')
+    recipe_name = str(request.json.get('name', '')).strip()
+    incredients = str(request.json.get('incredients', '')).strip()
+    category_id = str(request.json.get('category_id', '')).strip()
 
-    if recipe_name.strip() and description.strip():
-        recipe = Recipe(category_id, recipe_name, description)
+    if recipe_name and incredients and category_id:
+        recipe = Recipe(category_id, recipe_name, incredients)
         recipe.save()
-
-    recipelists = Recipe.getrecipe()
-    results = []
-    for recipelist in recipelists:
-        if recipelist.category_id == category_id:
-            results.append(recipelist)
-
-    response = jsonify({'recipe': dict(recipe_name=results)})
-    response.status_code = 201
-
-    return response
-
-
-@app.route('/recipe/api/v1.0/recipe', methods=['PUT'])
-@auth.login_required
-def update_recipe():
-    """function to update recipe of a user"""
-    recipe_old_name = request.json.get('old_name')
-    recipe_new_name = request.json.get('new_name')
-    description = request.json.get('description')
-    category_id = request.json.get('category_id')
-
-    if recipe_old_name.strip() and recipe_new_name.strip() and description.strip():
-        recipe = Recipe.query.filter_by(name=recipe_old_name).first()
-
-        recipe.name = recipe_new_name
-        recipe.description = description
-        recipe.save()
-
-        recipelists = Recipe.getrecipe()
-        results = []
-        for recipelist in recipelists:
-            if recipelist.category_id == category_id:
-                results.append(recipelist)
-
-    response = jsonify({'recipe': dict(recipe_name=results)})
-    response.status_code = 200
-
-    return response
-
-@app.route('/recipe/api/v1.0/recipes', methods=['GET'])
-@auth.login_required
-def view_recipe():
-    """function to recipe category of a user"""
-
-    recipelists = Recipe.getrecipe()
-
-    response = jsonify({'recipe': dict(recipe_name=recipelists)})
-    response.status_code = 200
-
-    return response
-
-
-@app.route('/recipe/api/v1.0/recipe', methods=['DELETE'])
-@auth.login_required
-def delete_recipe():
-    """function to delete recipe of a user"""
-    recipe_name = request.json.get('recipename')
-    if recipe_name is not None:
-        recipe = Recipe.query.filter_by(name=recipe_name).first()
-        recipe.delete()
-
+        response = jsonify({"message": "recipe {} was added successfully!".format(recipe.name)})
+        response.status_code = 201
     else:
-        abort(404)
+        response = {"message":"Please enter all details!"}, 200
+    return response
 
-    response = {"message": "recipe {} deleted successfully".format(recipe.id)}, 200
+
+@app.route('/recipe/api/v1.0/recipe/<int:recipe_id>', methods=['PUT'])
+@auth.login_required
+def update_recipe(recipe_id):
+    """function to update recipe of a user"""
+    recipe_name = str(request.json.get('name', '')).strip()
+    incredients = str(request.json.get('incredients', '')).strip()
+
+    recipe = Recipe.query.filter_by(id=recipe_id).first()
+
+    if recipe:
+        recipe.name = recipe_name
+        recipe.incredients = incredients
+        recipe.save()
+        response = jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)})
+        response.status_code = 201
+    else:
+        response = {"message": "No recipes added yet!"}, 200
+
+    return response
+
+@app.route('/recipe/api/v1.0/recipes/<int:category_id>', methods=['GET'])
+@auth.login_required
+def view_recipe(category_id):
+    """function to recipe category of a user"""
+    recipelists = Recipe.query.filter_by(category_id=category_id).first()
+
+    if recipelists:
+        response = jsonify(recipelists)
+        response.status_code = 200
+    else:
+        response = {"message": "No recipes added yet!"}, 200
+
+    return response
+
+
+@app.route('/recipe/api/v1.0/recipe/<int:recipe_id>', methods=['DELETE'])
+@auth.login_required
+def delete_recipe(recipe_id):
+    """function to delete recipe of a user"""
+    recipe = Recipe.query.filter_by(id=recipe_id).first()
+    if not recipe:
+        abort(404)
+    else:
+        recipe.delete()
+        response = {"message": "recipe {} deleted successfully!".format(recipe.id)}, 200
     return response
 
 if __name__ == '__main__':
