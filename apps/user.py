@@ -34,6 +34,7 @@ class Users(db.Model):
                     'firstname': user.firstname,
                     'lastname':user.lastname,
                     'username': user.username,
+                    'password':user.password
                 }
             results.append(obj)
             #response = jsonify(results)
