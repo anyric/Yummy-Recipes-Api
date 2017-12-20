@@ -43,7 +43,7 @@ class RecipeSchema(ma.Schema):
     ingredients = fields.String(required=True, validate=validate.Length(1))
     category_id = fields.Integer()
     date_modified = fields.DateTime()
-    url = ma.URLFor('view_recipe', id='<id>', _external=True)
+    url = ma.URLFor('view_recipe_in_category', id='<id>', _external=True)
 
     @pre_load
     def process_recipe(self, data):
