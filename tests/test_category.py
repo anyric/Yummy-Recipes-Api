@@ -1,79 +1,54 @@
-"""test for category.py"""
 import unittest
-import json
-from apps import app, db
+# import json
+from flask import jsonify
+from apps import app, db, config
 
-class CategoryTestCase(unittest.TestCase):
-    """This class represents the category test case"""
+class AuthTestCase(unittest.TestCase):
+    """Test case for the authentication blueprint."""
 
     def setUp(self):
-        """Define test variables and initialize app."""
+        """Set up test variables."""
+        config_name = config.TestingConfig
+        app.config.from_object(config_name)
         self.app = app
+        # initialize the test client
         self.client = self.app.test_client
-        self.category = {'user_id':1, 'name': 'Local food',
-                         'description':'Collection of local recipes'}
+        # This is the user test json data with a predefined email and password
+        self.user_data = {
+            'firstname': 'test',
+            'lastname':'user',
+            'username':'testuser',
+            'password': '1234'
+        }
 
-        # binding app to the current context
         with self.app.app_context():
             # create all tables
+            db.session.close()
+            db.drop_all()
             db.create_all()
 
-    def test_category_creation(self):
-        """Test API can create a category through POST request"""
-        response = self.client().post('/category', data=self.category)
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('Local food', str(response.data))
+    def test_user_registration(self):
+        """Test user registration works correcty."""
+        data = jsonify(self.user_data)
+        res = self.client().post('/new_user', data=data, content_type='application/json')
+        # get the results returned in json format
+        # result = json.loads(res.data.decode())
+        # assert that the request contains a success message and a 201 status code
+        # self.assertEqual(result['message'], "You registered successfully.")
+        self.assertEqual(res.status_code, 201)
 
-    def test_category_retrieval(self):
-        """Test API can retrieve a category through GET request."""
-        response = self.client().post('/category', data=self.category)
-        self.assertEqual(response.status_code, 201)
-        response = self.client().get('/category')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('Local food', str(response.data))
-
-    def test_category_retrieval_by_name(self):
-        """Test API can retrieval a category by using it's name."""
-        response = self.client().post('/category/', data=self.category)
-        self.assertEqual(response.status_code, 201)
-        result_in_json = json.loads(response.data.decode('utf-8').replace("'", "\""))
-        result = self.client().get('/category/{}'.format(result_in_json['name']))
-        self.assertEqual(result.status_code, 200)
-        self.assertIn('Local food', str(result.data))
-
-    def test_category_update(self):
-        """Test API can update an existing category through PUT request"""
-        category = {'user_id':1, 'name': 'Indian food',
-                    'description':'Collection of indian recipes'}
-        response = self.client().post('/category/', data=category)
-        self.assertEqual(response.status_code, 201)
-
-        category = {'old_name': 'Indian food', 'new_name':'Italian food',
-                    'description':'Collection of italian recipes'}
-        response = self.client().put('/category/1', data=category)
-        self.assertEqual(response.status_code, 200)
-        results = self.client().get('/category/1')
-        self.assertIn('Italian food', str(results.data))
-
-    def test_category_deletion(self):
-        """Test API can delete an existing category through DELETE request"""
-        category = {'user_id':1, 'name': 'Indian food',
-                    'description':'Collection of indian recipes'}
-        response = self.client().post('/category/', data=category)
-        self.assertEqual(response.status_code, 201)
-        response = self.client().delete('/category/1')
-        self.assertEqual(response.status_code, 200)
-        # Test to see if it exists, should return a 404
-        result = self.client().get('/category/1')
-        self.assertEqual(result.status_code, 404)
+    def test_user_already_registered(self):
+        """Test that a user cannot be registered twice."""
+        data = jsonify(self.user_data)
+        res = self.client().post('/recipe/api/v1.0/user', data=data, content_type='application/json')
+        self.assertEqual(res.status_code, 201)
+        second_res = self.client().post('/recipe/api/v1.0/user', data=data, content_type='application/json')
+        self.assertEqual(second_res.status_code, 202)
+        # get the results returned in json format
+        # result = json.loads(second_res.data.decode())
+        # self.assertEqual(
+            # result['message'], "User already exists. Please login.")
 
     def tearDown(self):
-        """teardown all initialized variables."""
-        with self.app.app_context():
-            # deletes all tables
-            db.session.remove()
-            db.drop_all()
-
-# Make the tests conveniently executable
-if __name__ == "__main__":
-    unittest.main()
+        db.session.remove()
+        db.drop_all()

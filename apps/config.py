@@ -9,7 +9,7 @@ class Config(object):
     TESTING = False
     CSRF_ENABLED = True
     SECRET = 'this string represents scret key'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/yummy_api'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:1234@localhost/yummy_api'
 
 class DevelopmentConfig(Config):
     """Configurations for Development."""
@@ -18,7 +18,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Configurations for test database."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:1234@localhost/test_db'
     DEBUG = True
 
 class StagingConfig(Config):

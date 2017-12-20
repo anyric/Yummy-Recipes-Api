@@ -1,23 +1,36 @@
 """main module that runs the application"""
-from datetime import datetime
+from datetime import datetime, timedelta
+import jwt
 from apps import app, auth
-from flask import request, abort, jsonify, g, make_response
+from flask import request, abort, jsonify, g, make_response, json
 from apps.user import Users
-from apps.category import Category
-from apps.recipe import Recipe
+from apps.category import Category, CategorySchema
+from apps.recipe import Recipe, RecipeSchema
+from apps.config import Config
+from apps.json import json
+from apps.paginate import PaginationHelper
+
+category_schema = CategorySchema()
+category_schema = CategorySchema(many=True)
+
+recipe_schema = RecipeSchema()
+recipe_schema = RecipeSchema(many=True)
 
 @app.route('/recipe/api/v1.0/user', methods=['POST'])
 def new_user():
     """function to create new user"""
-    firstname = str(request.json.get('firstname', "")).strip()
-    lastname = str(request.json.get('lastname', "")).strip()
-    username = str(request.json.get('username', "")).strip()
-    password = str(request.json.get('password', "")).strip()
-
+    # firstname = str(request.json.get('firstname', "")).strip()
+    # lastname = str(request.json.get('lastname', "")).strip()
+    # username = str(request.json.get('username', "")).strip()
+    # password = str(request.json.get('password', "")).strip()
+    firstname = request.data['firstname']
+    lastname = request.data['lastname']
+    username = request.data['username']
+    password = request.data['password']
     if firstname and lastname and username and password:
         user_exit = Users.query.filter_by(username=username).first()
         if user_exit:
-            response = jsonify({"message":"username {} already exits!".format(username)}, 200)
+            response = jsonify({"message":"username {} already exits!".format(username)}, 202)
         else:
             user = Users(firstname, lastname, username, password)
             user.save()
@@ -34,6 +47,31 @@ def view_users():
 
     return response
 
+
+@app.route('/recipe/api/v1.0/user/login', methods=['POST'])
+def login_user():
+    """function to verify username and password"""
+    username = request.json.get('username', '')
+    password = request.json.get('password', '')
+
+    user = Users.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({"message":"could not verify 1"}, 401)
+        # return make_response('Could not verify', 401,
+        #                      {'WWW-Authenticate':
+        #                       'Basic realm="Login Required!"'})
+
+    if user.password == password:
+        token = jwt.encode({'public_id': user.id,
+                            'exp': datetime.utcnow() + timedelta(hours=8)}, Config.SECRET)
+
+        return jsonify({'token': token.decode('UTF-8'),
+                        'message': 'Login successful!'}), 200
+    return jsonify({"message":"could not verify 2"}, 401)
+    # return make_response('Could not verify', 401,
+    #                      {'WWW-Authenticate':
+    #                       'Basic realm="Login Required!"'})
 
 @auth.verify_password
 def verify_password(username, password):
@@ -103,32 +141,100 @@ def update_category(category_id):
 
     return response
 
-@app.route('/recipe/api/v1.0/category', methods=['GET'])
+@app.route('/recipe/api/v1.0/category/', methods=['GET'])
 @auth.login_required
 def view_category():
-    """function to query recipe category of a user"""
-    user = Users.query.filter_by(username=g.user.username).first()
+    """function to query paginated recipe category of a user"""
+    user = Users.query.filter_by(id=g.user.id).first()
 
-    categorylist = Category.query.filter_by(user_id=user.id).all()
+    pagination_helper = PaginationHelper(
+        request,
+        query=Category.query.filter(Category.user_id == user.id),
+        resource_for_url='view_category',
+        key_name='results',
+        schema=category_schema)
+    result = pagination_helper.paginate_query()
+    return jsonify({'categories':result})
+
+
+@app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['GET'])
+@auth.login_required
+def view_category_by(category_id):
+    """function to query a recipe category of a user by category id"""
+    user = Users.query.filter_by(id=g.user.id).first()
+    categorylists = Category.query.filter_by(id=category_id).first()
+
+    if categorylists is None:
+        response = jsonify({"Message": "No category with id {} \
+was found!".format(category_id)}, 200)
+        return response
+
     results = []
-    if categorylist is not None:
-        for category in categorylist:
-            obj = {
-                'id': category.id,
-                'name': category.name,
-                'user': category.user_id,
-                'description': category.description,
-                'date_modified':category.date_modified
-                }
-            results.append(obj)
-            response = jsonify(results, 200)
 
+    if user.id == categorylists.user_id:
+
+        if categorylists:
+            for category in categorylists:
+                obj = {
+                    'id': category.id,
+                    'name': category.name,
+                    'user': category.user_id,
+                    'description': category.description,
+                    'date_modified':category.date_modified
+                    }
+                results.append(obj)
+            response = jsonify(results)
+            response.status_code = 200
     else:
-        response = jsonify({"message": "No category added yet!"}, 200)
+        response = jsonify({"Message": "You don't have the right \
+to view that category"}, 200)
+        return response
+
+@app.route('/recipe/api/v1.0/category/<int:category_id>/recipes/<int:recipe_id>', methods=['GET'])
+@auth.login_required
+def view_recipe_by_category(category_id, recipe_id):
+    """function to query a recipe category of a user by category id"""
+
+    user = Users.query.filter_by(id=g.user.id).first()
+    categorylists = Category.query.filter(Category.user_id == user.id, Category.id == category_id).first()
+    recipes = Recipe.query.filter(Recipe.id == recipe_id, Recipe.category_id == category_id)
 
 
-    return response
+    if categorylists is None:
+        response = jsonify({"Message": "No category with id {} \
+was found!".format(category_id)}, 200)
+        return response
 
+    if recipes is None:
+
+        response = jsonify({"Message": "No recipe with id {} \
+was found!".format(recipe_id)}, 200)
+        return response
+
+    results = []
+
+    if user.id == categorylists.user_id:
+
+        if recipes:
+            for recipe in recipes:
+                obj = {
+                    'id': recipe.id,
+                    'name': recipe.name,
+                    'category': recipe.category_id,
+                    'ingredients': recipe.ingredients,
+                    'date_modified':recipe.date_modified
+                    }
+                results.append(obj)
+
+            response = jsonify(results)
+            response.status_code = 200
+
+            return response
+    else:
+        response = jsonify({"Message": "You don't have the right \
+to view that recipe"}, 200)
+        return response
+    return jsonify({"Message":"No records found!"})
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
 @auth.login_required
@@ -139,7 +245,8 @@ def delete_category(category_id):
         abort(404)
     else:
         category.delete()
-        response = jsonify({"message": "category {} was deleted successfully".format(category.name)}, 200)
+        response = jsonify({"message": "category {} was \
+                            deleted successfully".format(category.name)}, 200)
 
         return response
 
@@ -151,7 +258,7 @@ def new_recipe():
     recipe_name = str(request.json.get('name', '')).strip()
     ingredients = str(request.json.get('ingredients', '')).strip()
     category_id = int(request.json.get('category_id', ''))
-    #date_modified = datetime.utcnow()
+
 
     if recipe_name and ingredients and category_id > 0:
         recipe = Recipe.query.filter_by(name=recipe_name).first()
@@ -189,18 +296,24 @@ def update_recipe(recipe_id):
 
     return response
 
-@app.route('/recipe/api/v1.0/recipe/<int:category_id>', methods=['GET'])
+
+@app.route('/recipe/api/v1.0/recipe/<int:recipe_id>', methods=['GET'])
 @auth.login_required
-def view_recipe(category_id):
-    """function to recipe category of a user"""
-    recipelists = Recipe.query.filter_by(category_id=category_id).all()
+def view_recipe_by(recipe_id):
+    """function to query a recipe of a user by recipe id"""
+    recipelists = Recipe.query.filter_by(id=recipe_id)
+
+    if recipelists is None:
+        response = jsonify({"Message": "No recipe with id {} was found!".format(recipe_id)}, 200)
+        return response
+
     results = []
     if recipelists:
         for recipe in recipelists:
             obj = {
                 'id': recipe.id,
                 'name': recipe.name,
-                'category': recipe.category_id,
+                'categroy_id': recipe.category_id,
                 'ingredients': recipe.ingredients,
                 'date_modified':recipe.date_modified
                 }
@@ -208,9 +321,24 @@ def view_recipe(category_id):
         response = jsonify(results)
         response.status_code = 200
     else:
-        response = jsonify({"message": "No recipes added yet!"}, 200)
+        response = jsonify({"message": "No recipe with id {} found!".format(recipe_id)}, 200)
 
     return response
+
+
+@app.route('/recipe/api/v1.0/recipe/', methods=['GET'])
+@auth.login_required
+def view_recipe():
+    """function to view paginated recipe of a user"""
+
+    pagination_helper = PaginationHelper(
+        request,
+        query=Recipe.query,
+        resource_for_url='view_recipe',
+        key_name='results',
+        schema=recipe_schema)
+    result = pagination_helper.paginate_query()
+    return jsonify({'recipes':result})
 
 
 @app.route('/recipe/api/v1.0/recipe/<int:recipe_id>', methods=['DELETE'])

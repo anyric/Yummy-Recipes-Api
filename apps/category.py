@@ -1,6 +1,10 @@
 """ module to manage category"""
 from datetime import datetime
-from apps import db
+from apps import db, ma
+from marshmallow import Schema, fields, pre_load
+from marshmallow import validate
+from flask_marshmallow import Marshmallow
+
 
 class Category(db.Model):
     """model to store recipe categroy"""
@@ -25,10 +29,39 @@ class Category(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def get_all(self, user_id):
+        """method to retrieve all category of a given user"""
+        return Category.query.filter_by(user_id=user_id)
+
     def delete(self):
         """method to delete a category"""
         db.session.delete(self)
         db.session.commit()
+
+
+class CategorySchema(ma.Schema):
+    """class to create category model for pagination"""
+    id = fields.Integer(dump_only=True)
+    name = fields.String(required=True, validate=validate.Length(1))
+    description = fields.String(required=True, validate=validate.Length(1))
+    user_id = fields.Integer()
+    date_modified = fields.DateTime()
+    url = ma.URLFor('view_category', id='<id>', _external=True)
+
+    @pre_load
+    def process_category(self, data):
+        """method to process the category data"""
+        category = data.get('category')
+        if category:
+            if isinstance(category, dict):
+                category_name = category.get('name')
+            else:
+                category_name = category
+            category_dict = dict(name=category_name)        
+        else:
+            category_dict = {}
+        data['category'] = category_dict
+        return {data}
 
 
     def __repr__(self):
