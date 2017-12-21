@@ -3,10 +3,12 @@ from flask import Flask
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
+from flasgger import Swagger
 from apps import config
 
 app = Flask(__name__)
 
+Swagger(app)
 config_name = config.DevelopmentConfig
 app.config.from_object(config_name)
 app.config['PAGINATION_PAGE_SIZE']=2
