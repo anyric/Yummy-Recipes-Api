@@ -27,20 +27,18 @@ class Users(db.Model):
         """method to retrieve users"""
         userlist = Users.query.all()
         results = []
-        
+
         for user in userlist:
             obj = {
-                    'id': user.id,
-                    'firstname': user.firstname,
-                    'lastname':user.lastname,
-                    'username': user.username,
-                    'password':user.password
+                'id': user.id,
+                'firstname': user.firstname,
+                'lastname':user.lastname,
+                'username': user.username
                 }
             results.append(obj)
-            #response = jsonify(results)
 
-        return results#response
-    
+        return results
+
 
     def delete(self):
         """method to delete a user"""
