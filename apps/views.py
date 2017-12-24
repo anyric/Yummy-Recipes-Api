@@ -40,15 +40,22 @@ def register_new_user():
     password = str(request.json.get('password', "")).strip()
 
     if firstname and lastname and username and password:
-        user_exit = Users.query.filter_by(username=username).first()
-        if user_exit:
-            return jsonify({"message":"username {} already exits!".format(username)})
+        if firstname.isalpha() and lastname.isalpha() and username.isalpha():
+            if password.isalpha():
+                return jsonify({"Message":"Password can't be only alphabets"}), 400
+
+            user_exit = Users.query.filter_by(username=username).first()
+            if user_exit:
+                return jsonify({"message":"username {} already exits!".format(username)}), 400
+            else:
+                user = Users(firstname, lastname, username, password)
+                user.save()
+                response = jsonify({'message': "user {} registered successfully!".format(user.username)}), 201
+                return response
         else:
-            user = Users(firstname, lastname, username, password)
-            user.save()
-            response = jsonify({'message': "user {} registered successfully!".format(user.username)}), 201
-            return response
-    return jsonify({"Message":"No values provided"})
+            return jsonify({"Message":"Only password can contain none alphabet character"}), 400
+
+    return jsonify({"Message":"Please fill in all fields"}), 400
 
 
 @app.route('/recipe/api/v1.0/user', methods=['GET'])
@@ -63,9 +70,10 @@ def view_users():
     """
     userlist = Users.getusers()
 
-    response = jsonify(userlist), 200
-
-    return response
+    if not userlist:
+        return jsonify({"Message":"No registered user found!"}), 204
+    else:
+        return jsonify(userlist), 200
 
 
 @auth.verify_password
@@ -77,11 +85,6 @@ def verify_password(username, password):
         return False
     g.user = user
     return True
-
-@app.errorhandler(404)
-def not_found():
-    """function to format error response"""
-    return make_response(jsonify({'error': 'Not found'})), 404
 
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
 @auth.login_required
@@ -107,17 +110,14 @@ def create_new_category():
         cat_exits = Category.query.filter_by(name=category_name).first()
 
         if cat_exits:
-            response = jsonify({"message":"Category {} already exits".format(category_name)})
+            return jsonify({"message":"Category {} already exits".format(category_name)}), 400
         else:
-
             category = Category(user_id, category_name, description)
             category.save()
 
-            response = jsonify({"message":"category {} was added successfully!".format(category.name)}), 201
+            return jsonify({"message":"category {} was added successfully!".format(category.name)}), 201
     else:
-        response = jsonify({"message":"Please enter all details!"}), 200
-
-    return response
+        return jsonify({"message":"Please enter all details!"}), 400
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['PUT'])
@@ -194,15 +194,21 @@ def view_category():
             schema=category_schema)
 
         result = pagination_helper.paginate_query()
-        return jsonify({'categories':result}), 200
+        if result['count']:
+            return jsonify({'categories':result}), 200
+        else:
+            return jsonify({'Message':"No record matches search term"}), 204
 
     result = pagination_helper.paginate_query()
-    return jsonify({'categories':result}), 200
+    if result['count']:
+        return jsonify({'categories':result}), 200
+
+    return jsonify({"Message":"No record found"}), 404
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['GET'])
 @auth.login_required
-def view_category_by(category_id):
+def view_category_by_id(category_id):
     """function to query a recipe category of a user by category id
     ---
     tags:
@@ -216,30 +222,32 @@ def view_category_by(category_id):
       200:
         description: Ok
     """
-    user = Users.query.filter_by(id=g.user.id).first()
-    categorylists = Category.query.filter_by(id=category_id).first()
+    if category_id > 0:
+        user = Users.query.filter_by(id=g.user.id).first()
+        categorylists = Category.query.filter(Category.id == category_id, Category.user_id == user.id).first()
 
-    if not categorylists:
-        response = jsonify({"Message": "No category with id {} was found!".format(category_id)}), 204# no content found
-        return response
-
-    results = {}
-
-    if user.id == categorylists.user_id:
-
-        if categorylists:
-            results["id"] = categorylists.id
-            results["name"] = categorylists.name
-            results["user"] = categorylists.user_id
-            results["description"] = categorylists.description
-            results["date_modified"] = categorylists.date_modified
-
-            response = jsonify(results)
+        if not categorylists:
+            response = jsonify({"Message": "No category with id {} was found!".format(category_id)}), 204# no content found
             return response
-    else:
-        response = jsonify({"Message": "You don't have the right to view that category"}), 401#unauthorized code
-        return response
-    return jsonify({"Message":"No record found!"}), 400#bad request code
+
+        results = {}
+
+        if user.id == categorylists.user_id:
+          
+            if categorylists:
+                results["id"] = categorylists.id
+                results["name"] = categorylists.name
+                results["user"] = categorylists.user_id
+                results["description"] = categorylists.description
+                results["date_modified"] = categorylists.date_modified
+
+                response = jsonify(results), 200
+                return response
+        else:
+            print('unauth............')
+            response = jsonify({"Message": "You don't have the right to view that category"}), 401#unauthorized code
+            return response
+    return jsonify({"Message":"No record found!"}), 404# not found code
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
@@ -298,7 +306,6 @@ def new_recipe():
     if recipe_name and ingredients and category_id > 0:
         recipe = Recipe.query.filter_by(name=recipe_name).first()
         if not recipe:
-
             recipe = Recipe(category_id, recipe_name, ingredients)
             recipe.save()
             response = jsonify({"message": "recipe {} was added successfully!".format(recipe.name)}), 201
@@ -307,6 +314,7 @@ def new_recipe():
             response = jsonify({"message":"Recipe name already exits"}), 200
     else:
         response = jsonify({"message":"Please enter all details!"}), 200
+
     return response
 
 
