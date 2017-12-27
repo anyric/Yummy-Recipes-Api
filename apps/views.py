@@ -155,11 +155,10 @@ def update_category(category_id):
         category.description = description
         category.date_modified = datetime.utcnow()
         category.save()
-        response = jsonify({"Message": "category {} was updated successfully".format(category.id)}), 201
+        return jsonify({"Message": "category {} was updated successfully".format(category.id)}), 201
     else:
-        response = jsonify({"Message": "Please enter new details!"}), 400
+        return jsonify({"Message": "Please enter new details!"}), 400
 
-    return response
 
 @app.route('/recipe/api/v1.0/category/', methods=['GET'])
 @auth.login_required
@@ -200,7 +199,7 @@ def view_category():
     result = pagination_helper.paginate_query()
     if result['count']:
         return jsonify({'categories':result}), 200
-
+    print("am finished")
     return jsonify({"Message":"No record found"}), 404
 
 
@@ -271,7 +270,6 @@ def delete_category(category_id):
             response = jsonify({"Message": "category {} was deleted successfully".format(category.name)}), 200#ok
             return response
     else:
-        print("invalid")
         return jsonify({"Message":"Invalid category id {}".format(category_id)}), 404#bad request
 
 
@@ -303,14 +301,11 @@ def new_recipe():
         if not recipe:
             recipe = Recipe(category_id, recipe_name, ingredients)
             recipe.save()
-            response = jsonify({"message": "recipe {} was added successfully!".format(recipe.name)}), 201
-
+            return jsonify({"message": "recipe {} was added successfully!".format(recipe.name)}), 201
         else:
-            response = jsonify({"message":"Recipe name already exits"}), 200
+            return jsonify({"message":"Recipe name already exits"}), 400
     else:
-        response = jsonify({"message":"Please enter all details!"}), 200
-
-    return response
+        return jsonify({"message":"Invalid values"}), 400
 
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['PUT'])
@@ -340,16 +335,18 @@ def update_recipe(recipe_id):
 
     recipe = Recipe.query.filter_by(id=recipe_id).first()
 
-    if recipe:
+    if not recipe:
+        return jsonify({"Message":"No recipe with id {} was found!".format(recipe_id)}), 400
+
+    if recipe_name and ingredients:
         recipe.name = recipe_name
         recipe.ingredients = ingredients
         recipe.date_modified = datetime.utcnow()
         recipe.save()
-        response = jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
+        return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
-        response = jsonify({"message": "No recipes with id {} was found!".format(recipe_id)}), 204#
+        return jsonify({"message": "No recipes with id {} was found!".format(recipe_id)}), 204#
 
-    return response
 
 
 @app.route('/recipe/api/v1.0/category/recipes/', methods=['GET'])
@@ -380,10 +377,16 @@ def view_recipe():
             key_name='results',
             schema=recipe_schema)
         result = pagination_helper.paginate_query()
-        return jsonify({'recipes':result})
+        if result['count']:
+            return jsonify({'recipes':result}), 200
+        else:
+            return jsonify({"Message": 'No record matches search term'}), 204
 
     result = pagination_helper.paginate_query()
-    return jsonify({'recipes':result}), 200
+    if result['count']:
+        return jsonify({'recipes':result}), 200
+    print('not found')
+    return jsonify({"Message":'No record found'}), 404
 
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:category_id>', methods=['GET'])
