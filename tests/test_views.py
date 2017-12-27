@@ -120,6 +120,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.post('/recipe/api/v1.0/category', headers=\
         self.get_authentication_header(), data=json.dumps(data))
+
         return response
 
     def test_create_new_category(self):
@@ -242,17 +243,8 @@ class ViewTests(TestCase):
 
     def test_category_unauthorized_user(self):
         """function to test view_category_by_id with invalid user"""
-        # self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
-        self.register_new_user('James', 'Alule', 'jlule', 'j1234')
 
-        user = Users.query.filter_by(username='jlule').first()
-        new_category_name = 'local food'
-        description = 'list of local foods'
-
-        self.create_new_category(user.id, new_category_name, description)
-
-        get_response = self.test_client.get('/recipe/api/v1.0/category/1', headers=\
-        self.get_authentication_header())
+        get_response = self.test_client.get('/recipe/api/v1.0/category/1')
         self.assertEqual(get_response.status_code, 401)
 
     def test_view_category_not_found(self):
@@ -268,3 +260,97 @@ class ViewTests(TestCase):
         get_response = self.test_client.get('/recipe/api/v1.0/category/0', headers=\
         self.get_authentication_header())
         self.assertEqual(get_response.status_code, 404)
+
+    def test_update_category_ok(self):
+        """function to test update_category"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+
+        self.create_new_category(user.id, new_category_name, description)
+
+        update_data = {'name':'ethiopian food', 'description':'list of ethiopian food'}
+
+        response = self.test_client.put('/recipe/api/v1.0/category/1', headers=\
+        self.get_authentication_header(), data=json.dumps(update_data))
+        self.assertEqual(response.status_code, 201)
+
+    def test_update_category_no_record(self):
+        """function to test update_category no record for update"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+
+        self.create_new_category(user.id, new_category_name, description)
+
+        update_data = {'name':'ethiopian food', 'description':'list of ethiopian food'}
+
+        response = self.test_client.put('/recipe/api/v1.0/category/2', headers=\
+        self.get_authentication_header(), data=json.dumps(update_data))
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_category_missing(self):
+        """function to test update_category variable missing """
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+
+        self.create_new_category(user.id, new_category_name, description)
+
+        update_data = {'name':'ethiopian food'}
+
+        response = self.test_client.put('/recipe/api/v1.0/category/1', headers=\
+        self.get_authentication_header(), data=json.dumps(update_data))
+        self.assertEqual(response.status_code, 400)
+
+    def test_delete_category_no_record(self):
+        """function to test delete_category record not found"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+
+        self.create_new_category(user.id, new_category_name, description)
+
+        response = self.test_client.delete('/recipe/api/v1.0/category/2', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 204)
+
+
+    def test_delete_category_ok(self):
+        """function to test delete_category deletes ok"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+
+        self.create_new_category(user.id, new_category_name, description)
+
+        response = self.test_client.delete('/recipe/api/v1.0/category/1', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_delete_category_not_found(self):
+        """function to test update_category"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+
+        self.create_new_category(user.id, new_category_name, description)
+
+        response = self.test_client.delete('/recipe/api/v1.0/category/0', headers=\
+        self.get_authentication_header())
+        print(response.status_code)
+        self.assertEqual(response.status_code, 404)
+

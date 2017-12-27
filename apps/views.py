@@ -155,11 +155,9 @@ def update_category(category_id):
         category.description = description
         category.date_modified = datetime.utcnow()
         category.save()
-
         response = jsonify({"Message": "category {} was updated successfully".format(category.id)}), 201
     else:
-        response = jsonify({"Message": "Please enter new details!"}), 200
-
+        response = jsonify({"Message": "Please enter new details!"}), 400
 
     return response
 
@@ -233,7 +231,7 @@ def view_category_by_id(category_id):
         results = {}
 
         if user.id == categorylists.user_id:
-          
+
             if categorylists:
                 results["id"] = categorylists.id
                 results["name"] = categorylists.name
@@ -243,10 +241,7 @@ def view_category_by_id(category_id):
 
                 response = jsonify(results), 200
                 return response
-        else:
-            print('unauth............')
-            response = jsonify({"Message": "You don't have the right to view that category"}), 401#unauthorized code
-            return response
+
     return jsonify({"Message":"No record found!"}), 404# not found code
 
 
@@ -276,8 +271,8 @@ def delete_category(category_id):
             response = jsonify({"Message": "category {} was deleted successfully".format(category.name)}), 200#ok
             return response
     else:
-        return jsonify({"Message":"Invalid category id {}".format(category_id)}), 400#bad request
-    return jsonify({"Message":"No record found!"}), 400#bad request
+        print("invalid")
+        return jsonify({"Message":"Invalid category id {}".format(category_id)}), 404#bad request
 
 
 @app.route('/recipe/api/v1.0/category/recipes', methods=['POST'])
