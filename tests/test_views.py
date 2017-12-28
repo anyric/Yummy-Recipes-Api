@@ -323,7 +323,6 @@ class ViewTests(TestCase):
         self.get_authentication_header())
         self.assertEqual(response.status_code, 204)
 
-
     def test_delete_category_ok(self):
         """function to test delete_category deletes ok"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
@@ -338,7 +337,6 @@ class ViewTests(TestCase):
         self.get_authentication_header())
         self.assertEqual(response.status_code, 200)
 
-
     def test_delete_category_not_found(self):
         """function to test update_category"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
@@ -352,7 +350,6 @@ class ViewTests(TestCase):
         response = self.test_client.delete('/recipe/api/v1.0/category/0', headers=\
         self.get_authentication_header())
         self.assertEqual(response.status_code, 404)
-
 
     def create_new_recipe(self, category_id, name, ingredients):
         """helper function to create_new_recipe """
@@ -482,7 +479,6 @@ class ViewTests(TestCase):
         response = self.test_client.put('/recipe/api/v1.0/category/recipes/1', headers=\
         self.get_authentication_header(), data=json.dumps(data))
         self.assertEqual(response.status_code, 201)
-    
 
     def test_view_recipe(self):
         """function to test view_recipe endpoint """
@@ -545,6 +541,100 @@ class ViewTests(TestCase):
         """function to test view_recipe endpoint not found"""
         #registering recipe user
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        response = self.test_client.get('/recipe/api/v1.0/category/recipes/', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 404)
+
+    def test_view_recipe_bad_request(self):
+        """function to test view_recipe endpoint with bad request"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        response = self.test_client.get('/recipe/api/v1.0/category/recipes/0', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 400)
+
+    def test_view_recipe_unauthorized(self):
+        """function to test view_recipe by category id endpoint unauthorized"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        self.register_new_user('James', 'Alule', 'jlule', 'j1234')
+        user = Users.query.filter_by(username='jlule').first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.get('/recipe/api/v1.0/category/recipes/1')
+        self.assertEqual(response.status_code, 401)
+
+    def test_view_recipe_no_content(self):
+        """function to test view_recipe by category id endpoint no content found"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        # user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(2, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.get('/recipe/api/v1.0/category/recipes/2', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 204)
+
+    def test_view_recipe_by_category_ok(self):
+        """function to test view_recipe by category id"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        # user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(2, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.get('/recipe/api/v1.0/category/recipes/1', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_recipe_by_category_recipe_ok(self):
+        """function to test view_recipe by category id"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        # user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(2, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.get('/recipe/api/v1.0/category/1/recipe/1', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 200)
+
+    def test_view_recipe_no_category_no_recipe(self):
+        """function to test view_recipe with no category id and no recipe id"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
         user = Users.query.filter_by(username=self.test_username).first()
         #creatng category for the user
         category_name = 'local food'
@@ -556,7 +646,63 @@ class ViewTests(TestCase):
         ingredients = 'Tea leave, sugar, hot water'
         self.create_new_recipe(category.id, name, ingredients)
 
-        response = self.test_client.get('/recipe/api/v1.0/category/recipes/0', headers=\
+        response = self.test_client.get('/recipe/api/v1.0/category/1/recipe/2', headers=\
         self.get_authentication_header())
-        print(response.status_code)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
+
+    def test_delete_recipe_by_id_bad_request(self):
+        """function to test view_recipe with no category and recipe found"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.delete('/recipe/api/v1.0/category/recipes/0', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 400)
+
+    def test_delete_recipe_no_content(self):
+        """function to test view_recipe with no category and recipe found"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.delete('/recipe/api/v1.0/category/recipes/3', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_recipe_by_id_ok(self):
+        """function to test view_recipe with no category and recipe found"""
+        #registering recipe user
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, category_name, description)
+        #creating recipe of the category
+        category = Category.query.filter_by(name=category_name).first()
+        name = 'Black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        self.create_new_recipe(category.id, name, ingredients)
+
+        response = self.test_client.delete('/recipe/api/v1.0/category/recipes/1', headers=\
+        self.get_authentication_header())
+        self.assertEqual(response.status_code, 200)
