@@ -1,0 +1,13 @@
+language: python
+python:
+  - 2.7
+  - 3.5
+  - 3.6.3
+
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+script:
+  - nose2 
+after_success:
+  - coveralls
