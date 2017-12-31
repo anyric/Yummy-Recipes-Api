@@ -30,8 +30,8 @@ def register_new_user():
     responses:
       201:
         description: New user added successfully!
-      202:
-        description: Username already exist!
+      400:
+        description: Bad Request
     """
 
     firstname = str(request.json.get('firstname', "")).strip()
@@ -60,13 +60,15 @@ def register_new_user():
 
 @app.route('/recipe/api/v1.0/user', methods=['GET'])
 def view_users():
-    """function to query users list
+    """function to view users list
     ---
     tags:
       - users
     responses:
       200:
         description: Ok
+      204:
+        description: No Content
     """
     userlist = Users.getusers()
 
@@ -99,8 +101,10 @@ def create_new_category():
         description: a json object containing details of a category to be added
         required: true
     responses:
-      200:
-        description: Ok
+      201:
+        description: New record created successfully
+      400:
+        description: Bad Request
     """
     category_name = str(request.json.get('name', '')).strip()
     description = str(request.json.get('description', '')).strip()
@@ -137,8 +141,10 @@ def update_category(category_id):
         description: a json object containing details of a category to be added
         required: true
     responses:
-      200:
-        description: Ok
+      201:
+        description: New record created successfully
+      400:
+        description: Bad Request
     """
 
     category_name = str(request.json.get('name', '')).strip()
@@ -164,13 +170,17 @@ def update_category(category_id):
 @auth.login_required
 def view_category():
     """
-    function to query paginated recipe category of a user
+    function to view paginated recipe category of a user
     ---
     tags:
       - categories
     responses:
       200:
         description: Ok
+      204:
+        description: No Content
+      404:
+        description: Not Found
     """
     user = Users.query.filter_by(id=g.user.id).first()
     pagination_helper = PaginationHelper(
@@ -206,7 +216,7 @@ def view_category():
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['GET'])
 @auth.login_required
 def view_category_by_id(category_id):
-    """function to query a recipe category of a user by category id
+    """function to view a recipe category of a user by category id
     ---
     tags:
       - categories
@@ -218,6 +228,10 @@ def view_category_by_id(category_id):
     responses:
       200:
         description: Ok
+      204:
+        description: No Content
+      404:
+        description: Not Found
     """
     if category_id > 0:
         user = Users.query.filter_by(id=g.user.id).first()
@@ -247,7 +261,7 @@ def view_category_by_id(category_id):
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
 @auth.login_required
 def delete_category(category_id):
-    """function to delete recipe category of a user
+    """function to delete a recipe category of a user
     ---
     tags:
       - categories
@@ -259,6 +273,10 @@ def delete_category(category_id):
     responses:
       200:
         description: Ok
+      204:
+        description: No Content
+      404:
+        description: Not Found
     """
     if category_id > 0:
         category = Category.query.filter_by(id=category_id).first()
@@ -286,10 +304,10 @@ def new_recipe():
         description: a json object containing recipe details
         required: true
     responses:
-      200:
-        description: Ok
       201:
         description: New record created successfully
+      400:
+        description: Bad Request
     """
     recipe_name = str(request.json.get('name', '')).strip()
     ingredients = str(request.json.get('ingredients', '')).strip()
@@ -325,10 +343,12 @@ def update_recipe(recipe_id):
         description: a json object containing recipe details
         required: true
     responses:
-      200:
-        description: Ok
       201:
         description: New record created successfully
+      204:
+        description: No Content
+      400:
+        description: Bad Request
     """
     recipe_name = str(request.json.get('name', '')).strip()
     ingredients = str(request.json.get('ingredients', '')).strip()
@@ -345,7 +365,7 @@ def update_recipe(recipe_id):
         recipe.save()
         return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
-        return jsonify({"message": "No recipes with id {} was found!".format(recipe_id)}), 204#
+        return jsonify({"message": "No recipes with id {} was found!".format(recipe_id)}), 204
 
 
 
@@ -359,6 +379,10 @@ def view_recipe():
     responses:
       200:
         description: Ok
+      204:
+        description: No Content
+      404:
+        description: Not Found
     """
     pagination_helper = PaginationHelper(
         request,
@@ -392,7 +416,7 @@ def view_recipe():
 @app.route('/recipe/api/v1.0/category/recipes/<int:category_id>', methods=['GET'])
 @auth.login_required
 def view_recipe_by_category(category_id):
-    """function to query all recipes in a particular category for a user
+    """function to view all recipes in a particular category for a user
     ---
     tags:
       - recipes
@@ -406,8 +430,8 @@ def view_recipe_by_category(category_id):
         description: Ok
       204:
         description: No content found
-      401:
-        description: Unauthorized user
+      400:
+        description: Bad Request
     """
     user = Users.query.filter_by(id=g.user.id).first()
 
@@ -432,10 +456,10 @@ def view_recipe_by_category(category_id):
     return jsonify({"Message":"Invalid category id!"}), 400
 
 
-@app.route('/recipe/api/v1.0/category/<int:category_id>/recipe/<int:recipe_id>', methods=['GET'])
+@app.route('/recipe/api/v1.0/category/<int:category_id>/recipes/<int:recipe_id>', methods=['GET'])
 @auth.login_required
 def view_recipe_by_id(category_id, recipe_id):
-    """function to query a particular recipe in a category for a user by id
+    """function to view a particular recipe in a category for a user by id
     ---
     tags:
       - recipes
@@ -451,10 +475,8 @@ def view_recipe_by_id(category_id, recipe_id):
     responses:
       200:
         description: Ok
-      204:
-        description: No content found
-      401:
-        description: Unauthorized user
+      400:
+        description: Bad Request
     """
 
     user = Users.query.filter_by(id=g.user.id).first()
@@ -493,6 +515,8 @@ def delete_recipe(recipe_id):
         description: Ok
       204:
         description: No content found
+      400:
+        description: Bad Request
     """
     if recipe_id > 0:
         recipe = Recipe.query.filter_by(id=recipe_id).first()

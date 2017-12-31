@@ -29,9 +29,9 @@ class Category(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def get_all(self, user_id):
-        """method to retrieve all category of a given user"""
-        return Category.query.filter_by(user_id=user_id)
+    # def get_all(self, user_id):
+    #     """method to retrieve all category of a given user"""
+    #     return Category.query.filter_by(user_id=user_id)
 
     def delete(self):
         """method to delete a category"""

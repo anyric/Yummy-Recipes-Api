@@ -1,4 +1,4 @@
-"""module create pagination"""
+"""module to create pagination"""
 from flask import url_for
 from flask import current_app
 
