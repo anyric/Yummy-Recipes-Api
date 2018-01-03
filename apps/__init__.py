@@ -13,6 +13,7 @@ config_name = config.DevelopmentConfig
 app.config.from_object(config_name)
 app.config['PAGINATION_PAGE_SIZE']=2
 app.config['PAGINATION_PAGE_ARGUMENT_NAME']='page'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 auth = HTTPBasicAuth()
 db = SQLAlchemy(app)
