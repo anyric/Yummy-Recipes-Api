@@ -1,7 +1,6 @@
 """main module that runs the application"""
 from datetime import datetime
 from flask import request, jsonify, g, make_response, json
-import jwt
 from apps import app, auth
 from apps.user import Users
 from apps.category import Category, CategorySchema
