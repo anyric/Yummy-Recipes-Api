@@ -6,3 +6,4 @@ flasgger
 marshmallow
 flask-testing
 psycopg2
+flask-script
