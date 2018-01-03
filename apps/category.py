@@ -13,7 +13,7 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(500), nullable=False)
-    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
     date_modified = db.Column(db.DateTime, nullable=False)
 
 
@@ -29,9 +29,9 @@ class Category(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def get_all(self, user_id):
-        """method to retrieve all category of a given user"""
-        return Category.query.filter_by(user_id=user_id)
+    # def get_all(self, user_id):
+    #     """method to retrieve all category of a given user"""
+    #     return Category.query.filter_by(user_id=user_id)
 
     def delete(self):
         """method to delete a category"""
@@ -57,7 +57,7 @@ class CategorySchema(ma.Schema):
                 category_name = category.get('name')
             else:
                 category_name = category
-            category_dict = dict(name=category_name)        
+            category_dict = dict(name=category_name)
         else:
             category_dict = {}
         data['category'] = category_dict

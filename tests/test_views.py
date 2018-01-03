@@ -1,5 +1,4 @@
 """ module to test views.py"""
-import unittest
 from flask_testing import TestCase
 from base64 import b64encode
 import json
@@ -627,7 +626,7 @@ class ViewTests(TestCase):
         ingredients = 'Tea leave, sugar, hot water'
         self.create_new_recipe(category.id, name, ingredients)
 
-        response = self.test_client.get('/recipe/api/v1.0/category/1/recipe/1', headers=\
+        response = self.test_client.get('/recipe/api/v1.0/category/1/recipes/1', headers=\
         self.get_authentication_header())
         self.assertEqual(response.status_code, 200)
 
@@ -646,7 +645,7 @@ class ViewTests(TestCase):
         ingredients = 'Tea leave, sugar, hot water'
         self.create_new_recipe(category.id, name, ingredients)
 
-        response = self.test_client.get('/recipe/api/v1.0/category/1/recipe/2', headers=\
+        response = self.test_client.get('/recipe/api/v1.0/category/1/recipes/2', headers=\
         self.get_authentication_header())
         self.assertEqual(response.status_code, 400)
 
