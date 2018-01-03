@@ -4,3 +4,4 @@ flask-marshmallow
 flask-httpauth
 flasgger
 marshmallow
+flask-testing
