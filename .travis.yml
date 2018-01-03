@@ -18,3 +18,5 @@ script:
   - nosetests --with-coverage --cover-package=apps
 after_success:
   - coveralls
+  - codeclimate
+  - circleci
