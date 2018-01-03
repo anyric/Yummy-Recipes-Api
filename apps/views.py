@@ -88,6 +88,34 @@ def verify_password(username, password):
     g.user = user
     return True
 
+@app.route('/recipe/api/v1.0/user', methods=['DELETE'])
+@auth.login_required
+def delete_user():
+    """function to delete a user
+    ---
+    tags:
+      - users
+    responses:
+      200:
+        description: Ok
+      204:
+        description: No Content
+      404:
+        description: Not Found
+    """
+
+    if g.user.id:
+        user = Users.query.filter_by(id=g.user.id).first()
+
+        if not user:
+            return jsonify({"Message":"No user with id {} was found!".format(g.user.id)}), 204# no content found
+        else:
+            user.delete()
+            return jsonify({"Message": "user {} was deleted successfully".format(g.user.username)}), 200#ok
+    else:
+        return jsonify({"Message":"Invalid user with id {}".format(g.user.id)}), 404#bad request
+
+
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
 @auth.login_required
 def create_new_category():
