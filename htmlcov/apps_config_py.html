@@ -119,7 +119,7 @@
 <p id="t9" class="stm run hide_run">    <span class="nam">TESTING</span> <span class="op">=</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
 <p id="t10" class="stm run hide_run">    <span class="nam">CSRF_ENABLED</span> <span class="op">=</span> <span class="key">True</span><span class="strut">&nbsp;</span></p>
 <p id="t11" class="stm run hide_run">    <span class="nam">SECRET</span> <span class="op">=</span> <span class="str">'this string represents scret key'</span><span class="strut">&nbsp;</span></p>
-<p id="t12" class="stm run hide_run">    <span class="nam">SQLALCHEMY_DATABASE_URI</span> <span class="op">=</span> <span class="str">'postgresql://postgres:1234@localhost/yummy_api'</span><span class="strut">&nbsp;</span></p>
+<p id="t12" class="stm run hide_run">    <span class="nam">SQLALCHEMY_DATABASE_URI</span> <span class="op">=</span> <span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'DATABASE_URL'</span><span class="op">,</span><span class="str">'postgresql://postgres:1234@localhost/yummy_api'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t13" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t14" class="stm run hide_run"><span class="key">class</span> <span class="nam">DevelopmentConfig</span><span class="op">(</span><span class="nam">Config</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t15" class="pln">    <span class="str">"""Configurations for Development."""</span><span class="strut">&nbsp;</span></p>
@@ -128,7 +128,7 @@
 <p id="t18" class="stm run hide_run"><span class="key">class</span> <span class="nam">TestingConfig</span><span class="op">(</span><span class="nam">Config</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
 <p id="t19" class="pln">    <span class="str">"""Configurations for test database."""</span><span class="strut">&nbsp;</span></p>
 <p id="t20" class="stm run hide_run">    <span class="nam">TESTING</span> <span class="op">=</span> <span class="key">True</span><span class="strut">&nbsp;</span></p>
-<p id="t21" class="stm run hide_run">    <span class="nam">SQLALCHEMY_DATABASE_URI</span> <span class="op">=</span> <span class="str">'postgresql://postgres:1234@localhost/test_db'</span><span class="strut">&nbsp;</span></p>
+<p id="t21" class="stm run hide_run">    <span class="nam">SQLALCHEMY_DATABASE_URI</span> <span class="op">=</span> <span class="nam">os</span><span class="op">.</span><span class="nam">environ</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">'DATABASE_URL'</span><span class="op">,</span><span class="str">'postgresql://postgres:1234@localhost/test_db'</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t22" class="stm run hide_run">    <span class="nam">DEBUG</span> <span class="op">=</span> <span class="key">True</span><span class="strut">&nbsp;</span></p>
 <p id="t23" class="pln"><span class="strut">&nbsp;</span></p>
 <p id="t24" class="stm run hide_run"><span class="key">class</span> <span class="nam">StagingConfig</span><span class="op">(</span><span class="nam">Config</span><span class="op">)</span><span class="op">:</span><span class="strut">&nbsp;</span></p>
@@ -156,7 +156,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.4.2</a>,
-            created at 2017-12-24 19:13
+            created at 2018-01-04 12:17
         </p>
     </div>
 </div>

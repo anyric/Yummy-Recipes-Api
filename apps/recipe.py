@@ -59,7 +59,3 @@ class RecipeSchema(ma.Schema):
             recipe_dict = {}
         data['recipe'] = recipe_dict
         return data
-
-
-    def __repr__(self):
-        return 'name {}'.format(self.name)

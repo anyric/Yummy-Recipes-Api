@@ -8,7 +8,14 @@ from apps import config
 
 app = Flask(__name__)
 
-Swagger(app)
+Swagger(app,
+    template={
+        "securityDefinitions": {
+            'basicAuth': {'type': 'basic'}
+        }
+    }
+)
+
 config_name = config.DevelopmentConfig
 app.config.from_object(config_name)
 app.config['PAGINATION_PAGE_SIZE']=2

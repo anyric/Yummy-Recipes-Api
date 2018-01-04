@@ -62,7 +62,3 @@ class CategorySchema(ma.Schema):
             category_dict = {}
         data['category'] = category_dict
         return {data}
-
-
-    def __repr__(self):
-        return 'name {}'.format(self.name)

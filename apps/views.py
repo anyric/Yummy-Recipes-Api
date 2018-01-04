@@ -1,12 +1,10 @@
-"""main module that runs the application"""
+"""view endpoint module that allow user to interact with the system"""
 from datetime import datetime
-from flask import request, jsonify, g, make_response, json
+from flask import request, jsonify, g
 from apps import app, auth
 from apps.user import Users
 from apps.category import Category, CategorySchema
 from apps.recipe import Recipe, RecipeSchema
-from apps.config import Config
-from apps.json import json
 from apps.paginate import PaginationHelper
 
 category_schema = CategorySchema()
@@ -15,7 +13,7 @@ category_schema = CategorySchema(many=True)
 recipe_schema = RecipeSchema()
 recipe_schema = RecipeSchema(many=True)
 
-@app.route('/recipe/api/v1.0/user', methods=['POST'])
+@app.route('/recipe/api/v1.0/user/register', methods=['POST'])
 def register_new_user():
     """function to create new user
     ---
@@ -45,11 +43,11 @@ def register_new_user():
 
             user_exit = Users.query.filter_by(username=username).first()
             if user_exit:
-                return jsonify({"message":"username {} already exits!".format(username)}), 400
+                return jsonify({"Message":"username {} already exits!".format(username)}), 400
             else:
                 user = Users(firstname, lastname, username, password)
                 user.save()
-                response = jsonify({'message': "user {} registered successfully!".format(user.username)}), 201
+                response = jsonify({'Message': "user {} registered successfully!".format(user.username)}), 201
                 return response
         else:
             return jsonify({"Message":"Only password can contain none alphabet character"}), 400
@@ -57,7 +55,46 @@ def register_new_user():
     return jsonify({"Message":"Please fill in all fields"}), 400
 
 
-@app.route('/recipe/api/v1.0/user', methods=['GET'])
+
+@app.route('/recipe/api/v1.0/user/update', methods=['PUT'])
+@auth.login_required
+def update_user_password():
+    """function to update user password
+    ---
+    tags:
+      - users
+    parameters:
+      - in: body
+        name: body
+        description: a dictionary containing old password and new password
+        required: true
+    responses:
+      201:
+        description: Password updated successfully!
+      400:
+        description: Bad Request
+    """
+
+    new_password = str(request.json.get('new_password', "")).strip()
+    if new_password:
+
+        if new_password.isalpha():
+            return jsonify({"Message":"Password can't be only alphabets"}), 400
+
+        if g.user.password == new_password:
+            return jsonify({"Message":"New password can't be the same as old password"}), 400
+
+        user_exit = Users.query.filter_by(username=g.user.username).first()
+        if user_exit:
+            user_exit.password = new_password
+            user_exit.save()
+            return jsonify({'Message':"Password updated successfully!"}), 201
+
+    return jsonify({"Message":"Please provide new passwords"}), 400
+
+
+@app.route('/recipe/api/v1.0/user/view', methods=['GET'])
+@auth.login_required
 def view_users():
     """function to view users list
     ---
@@ -71,10 +108,10 @@ def view_users():
     """
     userlist = Users.getusers()
 
-    if not userlist:
-        return jsonify({"Message":"No registered user found!"}), 204
-    else:
+    if userlist:
         return jsonify(userlist), 200
+    else:
+        return jsonify({"Message":"No registered user found!"}), 204
 
 
 @auth.verify_password
@@ -87,7 +124,7 @@ def verify_password(username, password):
     g.user = user
     return True
 
-@app.route('/recipe/api/v1.0/user', methods=['DELETE'])
+@app.route('/recipe/api/v1.0/user/delete', methods=['DELETE'])
 @auth.login_required
 def delete_user():
     """function to delete a user
@@ -97,22 +134,13 @@ def delete_user():
     responses:
       200:
         description: Ok
-      204:
-        description: No Content
-      404:
-        description: Not Found
     """
 
-    if g.user.id:
-        user = Users.query.filter_by(id=g.user.id).first()
+    user = Users.query.filter_by(id=g.user.id).first()
 
-        if not user:
-            return jsonify({"Message":"No user with id {} was found!".format(g.user.id)}), 204# no content found
-        else:
-            user.delete()
-            return jsonify({"Message": "user {} was deleted successfully".format(g.user.username)}), 200#ok
-    else:
-        return jsonify({"Message":"Invalid user with id {}".format(g.user.id)}), 404#bad request
+    if user:
+        user.delete()
+        return jsonify({"Message": "user {} was deleted successfully".format(g.user.username)}), 200#ok
 
 
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
@@ -265,8 +293,7 @@ def view_category_by_id(category_id):
         categorylists = Category.query.filter(Category.id == category_id, Category.user_id == user.id).first()
 
         if not categorylists:
-            response = jsonify({"Message": "No category with id {} was found!".format(category_id)}), 204# no content found
-            return response
+            return jsonify({"Message": "No category with id {} was found!".format(category_id)}), 204# no content found
 
         results = {}
 
@@ -279,8 +306,7 @@ def view_category_by_id(category_id):
                 results["description"] = categorylists.description
                 results["date_modified"] = categorylists.date_modified
 
-                response = jsonify(results), 200
-                return response
+                return jsonify(results), 200
 
     return jsonify({"Message":"No record found!"}), 404# not found code
 
@@ -312,8 +338,7 @@ def delete_category(category_id):
             return jsonify({"Message":"No category with id {} was found!".format(category_id)}), 204# no content found
         else:
             category.delete()
-            response = jsonify({"Message": "category {} was deleted successfully".format(category.name)}), 200#ok
-            return response
+            return jsonify({"Message": "category {} was deleted successfully".format(category.name)}), 200#ok
     else:
         return jsonify({"Message":"Invalid category id {}".format(category_id)}), 404#bad request
 
