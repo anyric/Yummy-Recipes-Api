@@ -2,6 +2,10 @@
 
 
 # Yemmy Recipes API
+![Screenshot of Flasgger tags](/screenshots/tags.png?raw=true "Flasgger tags")
+![Screenshot of users tags endpoints](/screenshots/user_endpoints.png?raw=true "user tags endpoints")
+![Screenshot of categories and recipes tags](/screenshots/category_recipe_endpoints.png?raw=true "categories and recipes tags endpoints")
+
 Yemmy Recipes is an application that allow users to keep track of their owesome food recipes. It helps individuals who love to cook and eat good food to remember recipes and also share with others.
 
 # Features
