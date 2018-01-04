@@ -75,7 +75,7 @@ def update_user_password():
         description: Bad Request
     """
 
-    new_password = str(request.json.get('new_password', "")).strip()
+    new_password = str(request.json.get('password', "")).strip()
     if new_password:
 
         if new_password.isalpha():
