@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/anyric/Yummy-Recipes-Api.svg?branch=master)](https://travis-ci.org/anyric/Yummy-Recipes-Api) [![Coverage Status](https://coveralls.io/repos/github/anyric/Yummy-Recipes-Api/badge.svg?branch=master)](https://coveralls.io/github/anyric/Yummy-Recipes-Api?branch=master) [![Maintainability](https://api.codeclimate.com/v1/badges/de93cc9873d904c8d2aa/maintainability)](https://codeclimate.com/github/anyric/Yummy-Recipes-Api/maintainability)
-[![Code Health](https://landscape.io/github/anyric/Yummy-Recipes-Api/yummy-pull/landscape.svg?style=flat)](https://landscape.io/github/anyric/Yummy-Recipes-Api/yummy-pull)
+[![Build Status](https://travis-ci.org/anyric/Yummy-Recipes-Api.svg?branch=master)](https://travis-ci.org/anyric/Yummy-Recipes-Api) [![Coverage Status](https://coveralls.io/repos/github/anyric/Yummy-Recipes-Api/badge.svg?branch=master)](https://coveralls.io/github/anyric/Yummy-Recipes-Api?branch=master) 
+[![Code Health](https://landscape.io/github/anyric/Yummy-Recipes-Api/yummy-pull/landscape.svg?style=flat)](https://landscape.io/github/anyric/Yummy-Recipes-Api/yummy-pull) [![Maintainability](https://api.codeclimate.com/v1/badges/de93cc9873d904c8d2aa/maintainability)](https://codeclimate.com/github/anyric/Yummy-Recipes-Api/maintainability)
 
 
 # Yemmy Recipes API
@@ -47,11 +47,48 @@ You can test the application using two libraries nose2 or nosetests: ``nose2 --w
 
 # API Endpoints
 ### Users
-|            URL Endpoints            | HTTP Requests |                      Access                    | Public Access|
-|-------------------------------------|---------------|------------------------------------------------|--------------|
-|POST /recipe/api/v1.0/user/register  |     POST      | Register a new user                            |  TRUE        |
-|PUT /recipe/api/v1.0/user/update     |     PUT       | Change user password                           |  FALSE       |
-|GET /recipe/api/v1.0/user/view       |     GET       | Retrieves a paginated lists of registered users|  FALSE       |
-|DELETE /recipe/api/v1.0/user/delete  |   DELETE      | Deletes a registered user                      |  FALSE       |
+|              URL Endpoints            | HTTP Requests |                      Access                    | Public Access|
+|---------------------------------------|---------------|------------------------------------------------|--------------|
+|POST /recipe/api/v1.0/user/register    |     POST      | Register a new user                            |  TRUE        |
+|PUT /recipe/api/v1.0/user/update       |     PUT       | Change user password                           |  FALSE       |
+|GET /recipe/api/v1.0/user/view         |     GET       | Retrieves a paginated lists of registered users|  FALSE       |
+|DELETE /recipe/api/v1.0/user/delete    |   DELETE      | Deletes a registered user                      |  FALSE       |
+
+### Categories
+|              URL Endpoints            | HTTP Requests |                      Access                    | Public Access|
+|---------------------------------------|---------------|------------------------------------------------|--------------|
+|POST /recipe/api/v1.0/category         |     POST      | Creates a new categroy                         |  FALSE       |
+|PUT /recipe/api/v1.0/category/\<id>    |     PUT       | Edits a category with specified id             |  FALSE       |
+|GET /recipe/api/v1.0/category/         |     GET       | Retrieves a paginated lists of  categories     |  FALSE       |
+|GET /recipe/api/v1.0/category/\<id>    |     GET       | Retrieves a category with specified id         |  FALSE       |
+|DELETE /recipe/api/v1.0/category/\<id> |     DELETE    | Deletes a category with specified id           |  FALSE       |
+
+### Recipes
+|                    URL Endpoints                | HTTP Requests |                        Access                        | Public Access|
+|-------------------------------------------------|---------------|------------------------------------------------------|--------------|
+|POST /recipe/api/v1.0/category/recipes           |     POST      | Creates a new recipe                                 |  FALSE       |
+|PUT /recipe/api/v1.0/category/recipes/\<id>      |     PUT       | Edits a recipe with specified id                     |  FALSE       |
+|GET /recipe/api/v1.0/category/recipes/           |     GET       | Retrieves a paginated lists of recipes               |  FALSE       |
+|GET /recipe/api/v1.0/category/recipes/\<id>      |     GET       | Retrieves a list of recipes in a category with specified id | FALSE |
+|GET /recipe/api/v1.0/category/\<id>/recipes/\<id>|     GET       | Retrieves a list of recipes in a category with specified id | FALSE |
+|DELETE /recipe/api/v1.0/category/recipes/\<id>   |     DELETE    | Deletes a recipe with specified id                   |  FALSE       |
+
+# Built with
+* Python 3.6.3
+* Flask 0.12.2
+* PostgreSQL
+
+# Authors
+* Anyama Richard :hearts:
+
+# Licence 
+This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/anyric/Yummy-Recipes-Api/blob/yummy-pull/LICENCE.md) file for details
+
+# Acknowledgements
+* Andela Fellows
+* Google search
+* Stack overflow
+* Official documentations for built with technologies
+* Building Restful Python web services by Gasto'n C. Hillar
 
 
