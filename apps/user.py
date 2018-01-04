@@ -44,6 +44,3 @@ class Users(db.Model):
         """method to delete a user"""
         db.session.delete(self)
         db.session.commit()
-
-    def __repr__(self):
-        return 'username {}'.format(self.username)

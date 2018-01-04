@@ -47,7 +47,7 @@ class ViewTests(TestCase):
     def register_new_user(self, firstname, lastname, username, password):
         """function to register_new_user view"""
         data = {'firstname': firstname, 'lastname':lastname, 'username':username, 'password': password}
-        response = self.client.post('/recipe/api/v1.0/user', data=json.dumps(data), content_type='application/json')
+        response = self.client.post('/recipe/api/v1.0/user/register', data=json.dumps(data), content_type='application/json')
         return response
 
     def test_regiter_new_user(self):
@@ -67,21 +67,21 @@ class ViewTests(TestCase):
         """function to test for missing values during user registration"""
         data = {'firstname': self.firstname, 'lastname':self.lastname, 'username':self.test_username}
 
-        response = self.client.post('/recipe/api/v1.0/user', data=json.dumps(data), content_type='application/json')
+        response = self.client.post('/recipe/api/v1.0/user/register', data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_values_are_alphabet(self):
         """function to test if any value of firstname, lastname and username are not alphabets"""
         data = {'firstname': self.firstname, 'lastname':self.lastname, 'username':'abc123', 'password':self.test_password}
 
-        response = self.client.post('/recipe/api/v1.0/user', data=json.dumps(data), content_type='application/json')
+        response = self.client.post('/recipe/api/v1.0/user/register', data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_password_isalphabet_only(self):
         """function to test if given password contains alphabets only"""
         data = {'firstname': self.firstname, 'lastname':self.lastname, 'username':self.test_username, 'password':'abcdef'}
 
-        response = self.client.post('/recipe/api/v1.0/user', data=json.dumps(data), content_type='application/json')
+        response = self.client.post('/recipe/api/v1.0/user/register', data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_for_unauthenticated_users(self):
@@ -93,25 +93,61 @@ class ViewTests(TestCase):
         """function to test view_user endpoint"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
-        response = self.test_client.get('/recipe/api/v1.0/user')
+        response = self.test_client.get('/recipe/api/v1.0/user/view', headers=self.get_authentication_header())
         self.assertEquals(response.status_code, 200)
 
-    def test_no_registered_user(self):
-        """function to test no registered user"""
-        # self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
-
-        response = self.test_client.get('/recipe/api/v1.0/user')
-        self.assertEquals(response.status_code, 204)
-
-    def test_view_no_registered_user(self):
-        "function to test no user registered"
-        response = self.test_client.get('/recipe/api/v1.0/user')
-        self.assertEquals(response.status_code, 204)
+    def test_view_user_unauthorized(self):
+        """function to test user unauthorized"""
+        response = self.test_client.get('/recipe/api/v1.0/user/view', headers=self.get_authentication_header())
+        self.assertEquals(response.status_code,401)
 
     def test_invalide_view_user(self):
         "function to test no  view_user found"
-        response = self.test_client.get('/recipe/api/v1.0/users')
+        response = self.test_client.get('/recipe/api/v1.0/users/view')
         self.assertEquals(response.status_code, 404)
+
+    def test_delete_user_ok(self):
+        """function to test user can be deleted"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        response = self.client.delete('/recipe/api/v1.0/user/delete', headers=self.get_authentication_header())
+        self.assertEqual(response.status_code, 200)
+  
+    def test_delete_user_unauthorized(self):
+        """function to test user not authorized to delete account"""
+        self.register_new_user('James', 'Alule', 'jlule', 'jlule1234')
+
+        response = self.client.delete('/recipe/api/v1.0/user/delete', headers=self.get_authentication_header())
+        self.assertEqual(response.status_code, 401)
+
+    def test_update_user_password_ok(self):
+        """function to test user password update is working"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+
+        data = {"new_password":"test123"}
+        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        self.assertEqual(response.status_code, 201)
+
+    def test_update_user_no_password(self):
+        """function to test password update with no new password"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        data = {}
+        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_password_isalphabet(self):
+        """function to test new password is alphabets only"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        data = {"new_password":"testabc"}
+        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_password_same_as_old(self):
+        """function to test new password is same as old password"""
+        self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
+        data = {"new_password":"test1234"}
+        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        self.assertEqual(response.status_code, 400)
 
     def create_new_category(self, user_id, name, description):
         """function to test create_new_category view"""
