@@ -124,8 +124,9 @@ class ViewTests(TestCase):
         """function to test user password update is working"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
-        data = {"new_password":"test123"}
+        data = {"password":"test123"}
         response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        print(response.status_code)
         self.assertEqual(response.status_code, 201)
 
     def test_update_user_no_password(self):
