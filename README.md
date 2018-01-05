@@ -1,12 +1,12 @@
 [![Build Status](https://travis-ci.org/anyric/Yummy-Recipes-Api.svg?branch=master)](https://travis-ci.org/anyric/Yummy-Recipes-Api) [![Coverage Status](https://coveralls.io/repos/github/anyric/Yummy-Recipes-Api/badge.svg)](https://coveralls.io/github/anyric/Yummy-Recipes-Api) [![Code Health](https://landscape.io/github/anyric/Yummy-Recipes-Api/master/landscape.svg?style=flat)](https://landscape.io/github/anyric/Yummy-Recipes-Api/master) [![Maintainability](https://api.codeclimate.com/v1/badges/de93cc9873d904c8d2aa/maintainability)](https://codeclimate.com/github/anyric/Yummy-Recipes-Api/maintainability)
 
 
-# Yemmy Recipes API
+# Yummy Recipes API
 ![Screenshot of Flasgger tags](/screenshots/tags.png?raw=true "Flasgger tags")
 ![Screenshot of users tags endpoints](/screenshots/user_endpoints.png?raw=true "user tags endpoints")
 ![Screenshot of categories and recipes tags](/screenshots/category_recipe_endpoints.png?raw=true "categories and recipes tags endpoints")
 
-Yemmy Recipes is an application that allow users to keep track of their owesome food recipes. It helps individuals who love to cook and eat good food to remember recipes and also share with others.
+Yummy Recipes is an application that allow users to keep track of their owesome food recipes. It helps individuals who love to cook and eat good food to remember recipes and also share with others.
 
 # Features
 * Users can create an account
@@ -26,19 +26,19 @@ The following list of softwares should be first install in order for the app to 
 The following steps should help you setup the environment and get the app runing.
 * Install Python
 #### For Windows and Mac OS
-Download the excutable files from the official Python website at the link below
+Download the excutable files from the official Python website at this link 
 [https://www.python.org/downloads/](https://www.python.org/downloads/) and just run the installer packages
 
 #### For Linux OS
-From the command line run '$ sudo apt-get install python3.6'
+From the command line run ``$ sudo apt-get install python3.6``
 
 #### Installing the project locally
-* Create a new folder in your favourite location e.g 'project' on the Desktop
+* Create a new folder in your favourite location e.g ``project`` on the Desktop
 * Move into the new folder you have just created
 ``cd Desktop/project``
 * Install virtualenv so that we can create a virtual environment to run the project ``$pip install virtualenv``
-* create a virtual environment called "my_env" ``$python3 -m env my_env``
-* clone the project repo ``$git clone https://github.com/anyric/Yummy-Recipes-Api.git``
+* Create a virtual environment called "my_env" ``$python3 -m env my_env``
+* Clone the project repo ``$git clone https://github.com/anyric/Yummy-Recipes-Api.git``
 * Activate your virtual environment `$source my_env/bin/activate`
 * Install project requirements from the requirements.txt file ``(my_env)~$pip install -r requirements.txt``
 * At this point am assuming you have already install your postgres database, So go a head and create two databases ``yummy_api`` and ``test_db`` for the development/production and testing configurations respectively.
