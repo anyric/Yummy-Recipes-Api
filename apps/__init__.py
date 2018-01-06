@@ -3,7 +3,7 @@ from flask import Flask
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
-from flask-heroku import heroku
+from flask_heroku import Heroku
 from flasgger import Swagger
 from apps import config
 
