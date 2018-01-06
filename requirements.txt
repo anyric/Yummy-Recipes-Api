@@ -9,3 +9,5 @@ flask-testing
 psycopg2
 flask-script
 flask-migrate
+gunicorn
+flask-heroku
