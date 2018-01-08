@@ -1,6 +1,5 @@
 """ module to test views.py"""
 from flask_testing import TestCase
-from base64 import b64encode
 import json
 from werkzeug.datastructures import Headers
 from apps import app, db
@@ -27,8 +26,8 @@ class ViewTests(TestCase):
         self.lastname = 'user'
         self.test_username = 'testuser'
         self.test_password = 'test1234'
-        self.header = Headers()
-        db.create_all()
+        with self.app_context:
+            db.create_all()
 
     def tearDown(self):
         """function to delete test_db after every test case"""
@@ -36,13 +35,23 @@ class ViewTests(TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def get_authentication_header(self):
-        """function to retrieve auth header"""
-        auth_data = b64encode(b'testuser:test1234').decode('utf-8')
+    def create_header_content_type(self):
+        """method to create header content type"""
+        content_type = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+        return content_type
 
-        self.header.add('Authorization', 'Basic ' + auth_data)
-        self.header.add('Content-Type', 'application/json')
-        return self.header
+    def get_header_token(self):
+        """function to retrieve token from header"""
+        data = {"username":self.test_username, "password":self.test_password}
+        response = self.test_client.post('/recipe/api/v1.0/user/login', data=json.dumps(data), content_type='application/json')
+
+        res = json.loads(response.data.decode())['token']
+        token = {"x-access-token": res}
+        # print(token, "#$%^&*$%^&")
+        return token
 
     def register_new_user(self, firstname, lastname, username, password):
         """function to register_new_user view"""
@@ -50,8 +59,9 @@ class ViewTests(TestCase):
         response = self.client.post('/recipe/api/v1.0/user/register', data=json.dumps(data), content_type='application/json')
         return response
 
-    def test_regiter_new_user(self):
+    def test_register_new_user(self):
         """function to test user can register successfully"""
+
         response = self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Users.query.count(), 1)
@@ -93,12 +103,12 @@ class ViewTests(TestCase):
         """function to test view_user endpoint"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
-        response = self.test_client.get('/recipe/api/v1.0/user/view', headers=self.get_authentication_header())
-        self.assertEquals(response.status_code, 200)
+        response = self.test_client.get('/recipe/api/v1.0/user/view', headers=self.get_header_token())
+        self.assertEqual(response.status_code, 200)
 
     def test_view_user_unauthorized(self):
         """function to test user unauthorized"""
-        response = self.test_client.get('/recipe/api/v1.0/user/view', headers=self.get_authentication_header())
+        response = self.test_client.get('/recipe/api/v1.0/user/view')
         self.assertEquals(response.status_code,401)
 
     def test_invalide_view_user(self):
@@ -110,14 +120,13 @@ class ViewTests(TestCase):
         """function to test user can be deleted"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
-        response = self.client.delete('/recipe/api/v1.0/user/delete', headers=self.get_authentication_header())
+        response = self.client.delete('/recipe/api/v1.0/user/delete', headers=self.get_header_token())
         self.assertEqual(response.status_code, 200)
-  
+
     def test_delete_user_unauthorized(self):
         """function to test user not authorized to delete account"""
-        self.register_new_user('James', 'Alule', 'jlule', 'jlule1234')
 
-        response = self.client.delete('/recipe/api/v1.0/user/delete', headers=self.get_authentication_header())
+        response = self.client.delete('/recipe/api/v1.0/user/delete')
         self.assertEqual(response.status_code, 401)
 
     def test_update_user_password_ok(self):
@@ -125,37 +134,45 @@ class ViewTests(TestCase):
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
         data = {"password":"test123"}
-        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
-        print(response.status_code)
+        response = self.client.put('/recipe/api/v1.0/user/reset', data=json.dumps(data), headers=self.get_header_token(), \
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_update_user_no_password(self):
         """function to test password update with no new password"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
         data = {}
-        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+
+        response = self.client.put('/recipe/api/v1.0/user/reset', data=json.dumps(data), headers=self.get_header_token(),\
+                                     content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_update_password_isalphabet(self):
         """function to test new password is alphabets only"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
-        data = {"new_password":"testabc"}
-        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        data = {"password":"testabc"}
+        print(data)
+        response = self.client.put('/recipe/api/v1.0/user/reset', data=json.dumps(data), headers=self.get_header_token(),\
+                                     content_type='application/json')
+
         self.assertEqual(response.status_code, 400)
 
     def test_update_password_same_as_old(self):
         """function to test new password is same as old password"""
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
-        data = {"new_password":"test1234"}
-        response = self.client.put('/recipe/api/v1.0/user/update', data=json.dumps(data), headers=self.get_authentication_header())
+        data = {"password":"test1234"}
+
+        response = self.client.put('/recipe/api/v1.0/user/reset', data=json.dumps(data), headers=self.get_header_token(),\
+                                     content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
 
     def create_new_category(self, user_id, name, description):
         """function to test create_new_category view"""
         data = {'user_id':user_id, 'name':name, 'description':description}
 
         response = self.test_client.post('/recipe/api/v1.0/category', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
 
         return response
 
@@ -209,7 +226,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 200)
         self.assertEqual('application/json', get_response.headers['Content-Type'])
 
@@ -224,7 +241,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/?q=f', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 200)
 
     def test_category_search_invalid(self):
@@ -238,7 +255,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/?q=p', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 204)
 
     def test_invalid_view_category(self):
@@ -246,7 +263,7 @@ class ViewTests(TestCase):
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/?', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 404)
 
     def test_view_category_by_id(self):
@@ -260,7 +277,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/1', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 200)
 
     def test_category_by_invalid_id(self):
@@ -274,7 +291,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/2', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 204)
 
     def test_category_unauthorized_user(self):
@@ -294,7 +311,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/0', headers=\
-        self.get_authentication_header())
+        self.get_header_token())
         self.assertEqual(get_response.status_code, 404)
 
     def test_update_category_ok(self):
@@ -310,7 +327,7 @@ class ViewTests(TestCase):
         update_data = {'name':'ethiopian food', 'description':'list of ethiopian food'}
 
         response = self.test_client.put('/recipe/api/v1.0/category/1', headers=\
-        self.get_authentication_header(), data=json.dumps(update_data))
+        self.get_header_token(), data=json.dumps(update_data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_update_category_no_record(self):
@@ -326,7 +343,7 @@ class ViewTests(TestCase):
         update_data = {'name':'ethiopian food', 'description':'list of ethiopian food'}
 
         response = self.test_client.put('/recipe/api/v1.0/category/2', headers=\
-        self.get_authentication_header(), data=json.dumps(update_data))
+        self.get_header_token(), data=json.dumps(update_data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_update_category_missing(self):
@@ -342,7 +359,7 @@ class ViewTests(TestCase):
         update_data = {'name':'ethiopian food'}
 
         response = self.test_client.put('/recipe/api/v1.0/category/1', headers=\
-        self.get_authentication_header(), data=json.dumps(update_data))
+        self.get_header_token(), data=json.dumps(update_data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_delete_category_no_record(self):
@@ -356,7 +373,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         response = self.test_client.delete('/recipe/api/v1.0/category/2', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 204)
 
     def test_delete_category_ok(self):
@@ -370,7 +387,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         response = self.test_client.delete('/recipe/api/v1.0/category/1', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     def test_delete_category_not_found(self):
@@ -384,7 +401,7 @@ class ViewTests(TestCase):
         self.create_new_category(user.id, new_category_name, description)
 
         response = self.test_client.delete('/recipe/api/v1.0/category/0', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 404)
 
     def create_new_recipe(self, category_id, name, ingredients):
@@ -392,7 +409,7 @@ class ViewTests(TestCase):
 
         data = {'category_id':category_id, 'name':name, 'ingredients':ingredients}
         response = self.test_client.post('/recipe/api/v1.0/category/recipes', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
 
         return response
 
@@ -429,7 +446,7 @@ class ViewTests(TestCase):
         data = {'category_id':category.id, 'ingredients':ingredients}
 
         response = self.test_client.post('/recipe/api/v1.0/category/recipes', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_new_recipe_already_exists(self):
@@ -450,7 +467,7 @@ class ViewTests(TestCase):
         data = {'category_id':category.id, 'name':name, 'ingredients':ingredients}
 
         response = self.test_client.post('/recipe/api/v1.0/category/recipes', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_update_missing_recipe(self):
@@ -471,7 +488,7 @@ class ViewTests(TestCase):
         data = {'category_id':category.id, 'ingredients':ingredients}
 
         response = self.test_client.put('/recipe/api/v1.0/category/recipes/2', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_update_missing_value(self):
@@ -492,7 +509,7 @@ class ViewTests(TestCase):
         data = {'category_id':category.id, 'ingredients':ingredients}
 
         response = self.test_client.put('/recipe/api/v1.0/category/recipes/1', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 204)
 
     def test_update_recipe(self):
@@ -513,7 +530,7 @@ class ViewTests(TestCase):
         data = {'name':'coffee', 'ingredients':'coffee, sugar, hot water'}
 
         response = self.test_client.put('/recipe/api/v1.0/category/recipes/1', headers=\
-        self.get_authentication_header(), data=json.dumps(data))
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_view_recipe(self):
@@ -532,7 +549,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     def test_view_recipe_search_ok(self):
@@ -551,7 +568,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/?q=B', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     def test_view_recipe_search_invalid(self):
@@ -570,7 +587,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/?q=b', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 204)
 
     def test_view_recipe_not_found(self):
@@ -579,7 +596,7 @@ class ViewTests(TestCase):
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 404)
 
     def test_view_recipe_bad_request(self):
@@ -588,7 +605,7 @@ class ViewTests(TestCase):
         self.register_new_user(self.firstname, self.lastname, self.test_username, self.test_password)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/0', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_view_recipe_unauthorized(self):
@@ -626,7 +643,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/2', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 204)
 
     def test_view_recipe_by_category_ok(self):
@@ -645,7 +662,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/1', headers=\
-        self.get_authentication_header())
+       self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     def test_view_recipe_by_category_recipe_ok(self):
@@ -664,7 +681,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/1/recipes/1', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     def test_view_recipe_no_category_no_recipe(self):
@@ -683,7 +700,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.get('/recipe/api/v1.0/category/1/recipes/2', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_delete_recipe_by_id_bad_request(self):
@@ -702,7 +719,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.delete('/recipe/api/v1.0/category/recipes/0', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_delete_recipe_no_content(self):
@@ -721,7 +738,7 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.delete('/recipe/api/v1.0/category/recipes/3', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 204)
 
     def test_delete_recipe_by_id_ok(self):
@@ -740,5 +757,5 @@ class ViewTests(TestCase):
         self.create_new_recipe(category.id, name, ingredients)
 
         response = self.test_client.delete('/recipe/api/v1.0/category/recipes/1', headers=\
-        self.get_authentication_header())
+        self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)

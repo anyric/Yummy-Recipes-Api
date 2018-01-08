@@ -1,8 +1,10 @@
 """view endpoint module that allow user to interact with the system"""
-from datetime import datetime
-from flask import request, jsonify, g
-from apps import app, auth
-from apps.user import Users
+import datetime
+from flask import request, jsonify, g, make_response, json
+import jwt
+from functools import wraps
+from apps import app
+from apps.user import Users, BlacklistTokens
 from apps.category import Category, CategorySchema
 from apps.recipe import Recipe, RecipeSchema
 from apps.paginate import PaginationHelper
@@ -12,6 +14,29 @@ category_schema = CategorySchema(many=True)
 
 recipe_schema = RecipeSchema()
 recipe_schema = RecipeSchema(many=True)
+
+def token_required(function):
+    """function to retrieve token from request header"""
+    @wraps(function)
+    def decorated(*args, **kwargs):
+        """function to decode to token from the request header"""
+        token = None
+
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        if not token:
+            return jsonify({"Message":"Token is missing!"}), 401
+
+        try:
+            user_data = jwt.decode(token, app.config['SECRET'])
+            current_user = Users.query.filter_by(id=user_data['id']).first()
+        except ValueError:
+            return jsonify({"Message":"Token is invalid!"}), 401
+
+        return function(current_user, *args, **kwargs)
+
+    return decorated
+
 
 @app.route('/recipe/api/v1.0/user/register', methods=['POST'])
 def register_new_user():
@@ -56,9 +81,9 @@ def register_new_user():
 
 
 
-@app.route('/recipe/api/v1.0/user/update', methods=['PUT'])
-@auth.login_required
-def update_user_password():
+@app.route('/recipe/api/v1.0/user/reset', methods=['PUT'])
+@token_required
+def update_user_password(current_user):
     """function to update user password
     ---
     tags:
@@ -75,16 +100,23 @@ def update_user_password():
         description: Bad Request
     """
 
-    new_password = str(request.json.get('password', "")).strip()
+    data = request.get_json()
+
+    try:
+        new_password = data['password']
+    except KeyError:
+        return jsonify({"Message":"No password provided!"}), 400
+
     if new_password:
 
         if new_password.isalpha():
+
             return jsonify({"Message":"Password can't be only alphabets"}), 400
 
-        if g.user.password == new_password:
+        if current_user.password == new_password:
             return jsonify({"Message":"New password can't be the same as old password"}), 400
 
-        user_exit = Users.query.filter_by(username=g.user.username).first()
+        user_exit = Users.query.filter_by(username=current_user.username).first()
         if user_exit:
             user_exit.password = new_password
             user_exit.save()
@@ -94,8 +126,8 @@ def update_user_password():
 
 
 @app.route('/recipe/api/v1.0/user/view', methods=['GET'])
-@auth.login_required
-def view_users():
+@token_required
+def view_users(current_user):
     """function to view users list
     ---
     tags:
@@ -114,20 +146,46 @@ def view_users():
         return jsonify({"Message":"No registered user found!"}), 204
 
 
-@auth.verify_password
-def verify_password(username, password):
-    """function to verify username and password"""
+@app.route('/recipe/api/v1.0/user/login', methods=['POST'])
+def login_user():
+    """function to login a user and get a token
+    ---
+    tags:
+      - users
+    parameters:
+      - in: body
+        name: body
+        description: Contains user's details for verification
+        type: string
+        required: true
+    responses:
+      200:
+        description: Login successfully!
+      401:
+        description: Invalid username or password
+    """
+    username = str(request.json.get('username', '')).strip()
+    password = str(request.json.get('password', '')).strip()
+
+    if not username or not password:
+        return make_response('could not verify', 401, \
+                                {'WWW-Authentication' : 'Basic realm="Login required!'})
+
     user = Users.query.filter_by(username=username).first()
 
-    if not user or not user.password == password:
-        return False
-    g.user = user
-    return True
+    if user and user.password == password:
+        token = jwt.encode(
+            {'id':user.id, 'exp':datetime.datetime.utcnow()+ datetime.timedelta(hours=720)},
+            app.config['SECRET'])#expires after 30 days
+        return jsonify({'token': token.decode('UTF-8')}), 200
 
-@app.route('/recipe/api/v1.0/user/delete', methods=['DELETE'])
-@auth.login_required
-def delete_user():
-    """function to delete a user
+    return make_response('Invalid username or password', 401, \
+                            {'WWW-Authentication' : 'Basic realm="Login required!'})
+
+@app.route('/recipe/api/v1.0/user/logout')
+@token_required
+def logout(current_user):
+    """function to logout users
     ---
     tags:
       - users
@@ -135,17 +193,51 @@ def delete_user():
       200:
         description: Ok
     """
+    if not current_user.id:
+        return jsonify({"Message": "You are not login. Please log in!"}), 401
 
-    user = Users.query.filter_by(id=g.user.id).first()
+    token = request.headers['x-access-token']
 
-    if user:
+    if token:
+        blacklisted = BlacklistTokens.query.filter_by(token=token).first()
+        if blacklisted:
+            return jsonify({"Message": "Token already blacklisted. Please login again!"}), 401
+
+        blacklisttoken = BlacklistTokens(token=token)
+        if blacklisttoken:
+            blacklisttoken.save()
+            return jsonify({"Message": "Your loggout Successfully"}), 200
+
+    else:
+        return jsonify({"Message": "Invalid token!"}), 401
+
+
+@app.route('/recipe/api/v1.0/user/delete', methods=['DELETE'])
+@token_required
+def delete_user(current_user):
+    """function to delete a user
+    ---
+    tags:
+      - users
+    responses:
+      200:
+        description: Ok
+      401:
+        description: Unauthorized user
+    """
+    if not current_user:
+        return jsonify({"Message":"You are not login, Please login first!"}), 401
+    user = Users.query.filter_by(id=current_user.id).first()
+
+    print(current_user.id)
+    if user and user.id == current_user.id:
         user.delete()
-        return jsonify({"Message": "user {} was deleted successfully".format(g.user.username)}), 200#ok
-
+        return jsonify({"Message": "user {} was deleted successfully".format(current_user.username)}), 200#ok
+    return jsonify({"Message":"No user found!"}),
 
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
-@auth.login_required
-def create_new_category():
+@token_required
+def create_new_category(current_user):
     """function to create new recipe category of a user
     ---
     tags:
@@ -161,17 +253,19 @@ def create_new_category():
       400:
         description: Bad Request
     """
-    category_name = str(request.json.get('name', '')).strip()
-    description = str(request.json.get('description', '')).strip()
-    user_id = g.user.id
+
+    data = request.get_json()
+
+    category_name = data['name']
+    description = data['description']
 
     if category_name and description:
         cat_exits = Category.query.filter_by(name=category_name).first()
 
-        if cat_exits:
+        if cat_exits and cat_exits.user_id == current_user.id:
             return jsonify({"message":"Category {} already exits".format(category_name)}), 400
         else:
-            category = Category(user_id, category_name, description)
+            category = Category(current_user.id, category_name, description)
             category.save()
 
             return jsonify({"message":"category {} was added successfully!".format(category.name)}), 201
@@ -180,8 +274,8 @@ def create_new_category():
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['PUT'])
-@auth.login_required
-def update_category(category_id):
+@token_required
+def update_category(current_user, category_id):
     """function to update category for a user
     ---
     tags:
@@ -210,20 +304,20 @@ def update_category(category_id):
     if not category:
         return jsonify({"Message":"No category with id {} was found!".format(category_id)}), 400
 
-    if category_name and description:
+    if category_name and description and category.user_id == current_user.id:
 
         category.name = category_name
         category.description = description
-        category.date_modified = datetime.utcnow()
+        category.date_modified = datetime.datetime.utcnow()
         category.save()
         return jsonify({"Message": "category {} was updated successfully".format(category.id)}), 201
     else:
-        return jsonify({"Message": "Please enter new details!"}), 400
+        return jsonify({"Message": "Please enter new details and ensure the category is yours!"}), 400
 
 
 @app.route('/recipe/api/v1.0/category/', methods=['GET'])
-@auth.login_required
-def view_category():
+@token_required
+def view_category(current_user):
     """
     function to view paginated recipe category of a user
     ---
@@ -237,10 +331,10 @@ def view_category():
       404:
         description: Not Found
     """
-    user = Users.query.filter_by(id=g.user.id).first()
+    # user = Users.query.filter_by(id=current_user.id).first()
     pagination_helper = PaginationHelper(
         request,
-        query=Category.query.filter(Category.user_id == user.id),
+        query=Category.query.filter(Category.user_id == current_user.id),
         resource_for_url='view_category',
         key_name='results',
         schema=category_schema)
@@ -250,7 +344,7 @@ def view_category():
     if search:
         pagination_helper = PaginationHelper(
             request,
-            query=Category.query.filter(Category.user_id == user.id, Category.name.contains(search)),
+            query=Category.query.filter(Category.user_id == current_user.id, Category.name.contains(search)),
             resource_for_url='view_category',
             key_name='results',
             schema=category_schema)
@@ -269,8 +363,8 @@ def view_category():
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['GET'])
-@auth.login_required
-def view_category_by_id(category_id):
+@token_required
+def view_category_by_id(current_user, category_id):
     """function to view a recipe category of a user by category id
     ---
     tags:
@@ -289,15 +383,15 @@ def view_category_by_id(category_id):
         description: Not Found
     """
     if category_id > 0:
-        user = Users.query.filter_by(id=g.user.id).first()
-        categorylists = Category.query.filter(Category.id == category_id, Category.user_id == user.id).first()
+        # user = Users.query.filter_by(id=g.user.id).first()
+        categorylists = Category.query.filter(Category.id == category_id, Category.user_id == current_user.id).first()
 
         if not categorylists:
             return jsonify({"Message": "No category with id {} was found!".format(category_id)}), 204# no content found
 
         results = {}
 
-        if user.id == categorylists.user_id:
+        if current_user.id == categorylists.user_id:
 
             if categorylists:
                 results["id"] = categorylists.id
@@ -312,8 +406,8 @@ def view_category_by_id(category_id):
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
-@auth.login_required
-def delete_category(category_id):
+@token_required
+def delete_category(current_user, category_id):
     """function to delete a recipe category of a user
     ---
     tags:
@@ -331,11 +425,12 @@ def delete_category(category_id):
       404:
         description: Not Found
     """
+
     if category_id > 0:
-        category = Category.query.filter_by(id=category_id).first()
+        category = Category.query.filter(Category.id == category_id, Category.user_id == current_user.id).first()
 
         if not category:
-            return jsonify({"Message":"No category with id {} was found!".format(category_id)}), 204# no content found
+            return jsonify({"Message":"No category {} found or doesn't blong to you!".format(category_id)}), 204# no content found
         else:
             category.delete()
             return jsonify({"Message": "category {} was deleted successfully".format(category.name)}), 200#ok
@@ -344,8 +439,8 @@ def delete_category(category_id):
 
 
 @app.route('/recipe/api/v1.0/category/recipes', methods=['POST'])
-@auth.login_required
-def new_recipe():
+@token_required
+def new_recipe(current_user):
     """function to create new recipe of a user
     ---
     tags:
@@ -365,13 +460,20 @@ def new_recipe():
     ingredients = str(request.json.get('ingredients', '')).strip()
     category_id = int(request.json.get('category_id', ''))
 
+    category = Category.query.filter(Category.id == category_id, \
+                                    Category.user_id == current_user.id)
+
+    if not category:
+        return jsonify({"Message":"No category {} found or doesn't blong to you!".\
+                        format(category_id)}), 204# no content found
 
     if recipe_name and ingredients and category_id > 0:
         recipe = Recipe.query.filter_by(name=recipe_name).first()
         if not recipe:
             recipe = Recipe(category_id, recipe_name, ingredients)
             recipe.save()
-            return jsonify({"message": "recipe {} was added successfully!".format(recipe.name)}), 201
+            return jsonify({"message": "recipe {} was added successfully!".\
+                            format(recipe.name)}), 201
         else:
             return jsonify({"message":"Recipe name already exits"}), 400
     else:
@@ -379,8 +481,8 @@ def new_recipe():
 
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['PUT'])
-@auth.login_required
-def update_recipe(recipe_id):
+@token_required
+def update_recipe(current_user, recipe_id):
     """function to update recipe of a user
     ---
     tags:
@@ -402,18 +504,25 @@ def update_recipe(recipe_id):
       400:
         description: Bad Request
     """
+    category = Category.query.filter_by(user_id=current_user.id)
+
+    if not category:
+        return jsonify({"Message":"Recipe {} doesn't blong to you!".\
+                        format(recipe_id)}), 400# bad request
+
     recipe_name = str(request.json.get('name', '')).strip()
     ingredients = str(request.json.get('ingredients', '')).strip()
 
     recipe = Recipe.query.filter_by(id=recipe_id).first()
 
     if not recipe:
-        return jsonify({"Message":"No recipe with id {} was found!".format(recipe_id)}), 400
+        return jsonify({"Message":"No recipe with id {} was found or doesn't blongs to you!".\
+                        format(recipe_id)}), 400
 
     if recipe_name and ingredients:
         recipe.name = recipe_name
         recipe.ingredients = ingredients
-        recipe.date_modified = datetime.utcnow()
+        recipe.date_modified = datetime.datetime.utcnow()
         recipe.save()
         return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
@@ -422,8 +531,8 @@ def update_recipe(recipe_id):
 
 
 @app.route('/recipe/api/v1.0/category/recipes/', methods=['GET'])
-@auth.login_required
-def view_recipe():
+@token_required
+def view_recipe(current_user):
     """function to view paginated recipes of a user
     ---
     tags:
@@ -436,6 +545,12 @@ def view_recipe():
       404:
         description: Not Found
     """
+
+    category = Category.query.filter_by(user_id=current_user.id)
+
+    if not category:
+        return jsonify({"Message":"Recipe doesn't blong to you!"}), 400
+
     pagination_helper = PaginationHelper(
         request,
         query=Recipe.query,
@@ -466,8 +581,8 @@ def view_recipe():
 
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:category_id>', methods=['GET'])
-@auth.login_required
-def view_recipe_by_category(category_id):
+@token_required
+def view_recipe_by_category(current_user, category_id):
     """function to view all recipes in a particular category for a user
     ---
     tags:
@@ -485,14 +600,16 @@ def view_recipe_by_category(category_id):
       400:
         description: Bad Request
     """
-    user = Users.query.filter_by(id=g.user.id).first()
+    # user = Users.query.filter_by(id=g.user.id).first()
 
     if category_id > 0:
-        categorylists = Category.query.filter(Category.user_id == user.id, Category.id == category_id).first()
+        categorylists = Category.query.filter(Category.user_id == current_user.id, \
+                                                Category.id == category_id).first()
         recipes = Recipe.query.filter_by(category_id=category_id)
 
-        if not categorylists or not recipes:
-            return jsonify({"Message": "No category with id {} was found!".format(category_id)}), 204#no content found
+        if not categorylists or not recipes or not categorylists.user_id == current_user.id:
+            return jsonify({"Message": "No category id {} found or doesn't belong to you!".\
+                            format(category_id)}), 204#no content found
 
         results = {}
         for recipe in recipes:
@@ -509,8 +626,8 @@ def view_recipe_by_category(category_id):
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>/recipes/<int:recipe_id>', methods=['GET'])
-@auth.login_required
-def view_recipe_by_id(category_id, recipe_id):
+@token_required
+def view_recipe_by_id(current_user, category_id, recipe_id):
     """function to view a particular recipe in a category for a user by id
     ---
     tags:
@@ -531,11 +648,14 @@ def view_recipe_by_id(category_id, recipe_id):
         description: Bad Request
     """
 
-    user = Users.query.filter_by(id=g.user.id).first()
-
-    if category_id > 0:
-        categorylists = Category.query.filter(Category.user_id == user.id, Category.id == category_id).first()
+    if category_id > 0 and recipe_id > 0:
+        categorylists = Category.query.filter(Category.user_id == current_user.id, \
+                                                Category.id == category_id).first()
         recipes = Recipe.query.filter(Recipe.id == categorylists.id, Recipe.id == recipe_id)
+
+        if not categorylists or not recipes:
+            return jsonify({"Message": "No category id {} found or doesn't belong to you!".\
+                            format(category_id)}), 204#no content found
 
         results = {}
         for recipe in recipes:
@@ -547,12 +667,12 @@ def view_recipe_by_id(category_id, recipe_id):
                 results["date_modified"] = recipe.date_modified
 
                 return jsonify(results), 200
-    
+
     return jsonify({"Message":"Invalid category id!"}), 400
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['DELETE'])
-@auth.login_required
-def delete_recipe(recipe_id):
+@token_required
+def delete_recipe(current_user, recipe_id):
     """function to delete a recipe from a category
     ---
     tags:
@@ -562,6 +682,8 @@ def delete_recipe(recipe_id):
         name: recipe_id
         description: Id of a recipe
         required: true
+    security:
+      - TokenHeader: []
     responses:
       200:
         description: Ok
@@ -570,10 +692,17 @@ def delete_recipe(recipe_id):
       400:
         description: Bad Request
     """
+    category = Category.query.filter_by(user_id=current_user.id)
+
+    if not category:
+        return jsonify({"Message":"Recipe doesn't blong to you!"}), 400
+
     if recipe_id > 0:
         recipe = Recipe.query.filter_by(id=recipe_id).first()
+
         if not recipe:
-            return jsonify({"Message":"No recipe with id {} was found!".format(recipe_id)}), 204#no content found
+            return jsonify({"Message":"No recipe with id {} was found or doesn't blongs to you!".\
+                            format(recipe_id)}), 204
         else:
             recipe.delete()
             return jsonify({"Message": "recipe {} deleted successfully!".format(recipe_id)}), 200
