@@ -8,20 +8,33 @@ from flasgger import Swagger
 from apps import config
 
 app = Flask(__name__)
-
-Swagger(app,
-    template={
-        "securityDefinitions": {
-            'basicAuth': {'type': 'basic'}
-        }
-    }
-)
-
 config_name = config.DevelopmentConfig
+
+app.config['SWAGGER'] = {"swagger": "2.0",
+                             "title": "Yummy Recipes",
+                             "uiversion": 2,
+                             "info": {
+                                "title": "Yummy Recipe API",
+                                "description": "Yummy Recipe is an application that allow users to \
+                                keep track of their owesome food recipes. It helps individuals who love to cook \
+                                and eat good food to remember recipes and also share with others.",
+                                "version": "1.0.0",
+                                "basepath": '/',
+                             },
+                             "securityDefinitions": {
+                                "TokenHeader": {
+                                    "type": "apiKey",
+                                    "name": "x-access-token",
+                                    "in": "header"
+                                },
+                             }}
+
 app.config.from_object(config_name)
 app.config['PAGINATION_PAGE_SIZE']=2
 app.config['PAGINATION_PAGE_ARGUMENT_NAME']='page'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+Swagger(app)
 heroku = Heroku(app)
 auth = HTTPBasicAuth()
 db = SQLAlchemy(app)

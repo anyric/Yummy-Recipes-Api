@@ -1,4 +1,5 @@
 """ module to manage users"""
+from datetime import datetime
 from apps import db
 
 class Users(db.Model):
@@ -44,3 +45,34 @@ class Users(db.Model):
         """method to delete a user"""
         db.session.delete(self)
         db.session.commit()
+
+class BlacklistTokens(db.Model):
+    """model to store blacklisted tokens """
+    __tablename__ = 'blacklist'
+
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String, nullable=False)
+    date_blacklisted = db.Column(db.DateTime, nullable=False)
+
+
+    def __init__(self, token):
+        self.token = token
+        self.date_blacklisted = datetime.utcnow()
+
+
+    def save(self):
+        """method to store new user"""
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def verify_blacklist(token):
+        """method to verify if token is blacklisted """
+        blacklisted = BlacklistTokens.query.filter_by(token=token).first()
+        if blacklisted:
+            return True
+        else:
+            return False
+
+    def __repr__(self):
+        return '<id: token: {}'.format(self.token)
