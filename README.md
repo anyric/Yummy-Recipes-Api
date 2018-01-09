@@ -9,10 +9,9 @@
 Yummy Recipes is an application that allow users to keep track of their owesome food recipes. It helps individuals who love to cook and eat good food to remember recipes and also share with others.
 
 # Features
-* Users can create an account
-* Users can log in
-* Users can create, view, update and delete recipe categories
-* Users can create, view, update and delete recipes in existing categories
+* Users can create accounts, log in, logout,update passwords and delete their accounts
+* Users can create, view, update and delete their recipe categories
+* Users can create, view, update and delete their recipes in existing categories
 
 # Pre-requisites
 The following list of softwares should be first install in order for the app to run.
