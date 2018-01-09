@@ -47,15 +47,18 @@ def register_new_user():
     parameters:
       - in: body
         name: body
-        description: a dictionary containing user details
+        description: a dictionary of user details
         required: true
+        schema:
+          id: register
+          example: {"firstname":"Richard", "lastname":"Anyama",
+          "username":"cooldev", "password":"cool1234"}
     responses:
       201:
         description: New user added successfully!
       400:
         description: Bad Request
     """
-
     firstname = str(request.json.get('firstname', "")).strip()
     lastname = str(request.json.get('lastname', "")).strip()
     username = str(request.json.get('username', "")).strip()
@@ -92,8 +95,11 @@ def update_user_password(current_user):
     parameters:
       - in: body
         name: body
-        description: a dictionary containing old password and new password
+        description: a dictionary containing new password
         required: true
+        schema:
+          id: reset
+          example: {"password":"dev1234"}
     responses:
       201:
         description: Password updated successfully!
@@ -156,9 +162,12 @@ def login_user():
     parameters:
       - in: body
         name: body
-        description: Contains user's details for verification
+        description: a dictionay of username and password for verification
         type: string
         required: true
+        schema:
+          id: login
+          example: {"username":"cooldev", "password":"cool1234"}
     responses:
       200:
         description: Login successfully!
@@ -172,9 +181,9 @@ def login_user():
         return make_response('could not verify', 401, \
                                 {'WWW-Authentication' : 'Basic realm="Login required!'})
 
-    user = Users.query.filter_by(username=username).first()
+    user = Users.query.filter(Users.username == username, Users.password == password).first()
 
-    if user and user.password == password:
+    if user:
         token = jwt.encode(
             {'id':user.id, 'exp':datetime.datetime.utcnow()+ datetime.timedelta(hours=720)},
             app.config['SECRET'])#expires after 30 days
@@ -194,7 +203,7 @@ def logout(current_user):
       200:
         description: Ok
     """
-    if not current_user.id:
+    if not current_user:
         return jsonify({"Message": "You are not login. Please log in!"}), 401
 
     token = request.headers['x-access-token']
@@ -246,8 +255,11 @@ def create_new_category(current_user):
     parameters:
       - in: body
         name: body
-        description: a json object containing details of a category to be added
+        description: a dictionary containing details of a category to be added
         required: true
+        schema:
+          id: category
+          example: {"name":"black tea", "description":"a list of recipe categories"}
     responses:
       201:
         description: New record created successfully
@@ -289,8 +301,11 @@ def update_category(current_user, category_id):
         required: true
       - in: body
         name: body
-        description: a json object containing details of a category to be added
+        description: a dictionary containing details of a category to be updated
         required: true
+        schema:
+          id: update_category
+          example: {"name":"black tea", "description":"a list of recipe categories"}
     responses:
       201:
         description: New record created successfully
@@ -334,7 +349,6 @@ def view_category(current_user):
       404:
         description: Not Found
     """
-    # user = Users.query.filter_by(id=current_user.id).first()
     pagination_helper = PaginationHelper(
         request,
         query=Category.query.filter(Category.user_id == current_user.id),
@@ -457,8 +471,12 @@ def new_recipe(current_user):
     parameters:
       - in: body
         name: body
-        description: a json object containing recipe details
+        description: a dictionary containing details of a recipe to be added
         required: true
+        schema:
+          id: recipe
+          example: {"name":"black tea", "ingredients":"tea leave, sugar,
+          hot water", "category_id":1}
     responses:
       201:
         description: New record created successfully
@@ -503,11 +521,15 @@ def update_recipe(current_user, recipe_id):
         required: true
       - in: body
         name: body
-        description: a json object containing recipe details
+        description: a dictionary containing details of a recipe to be updated
         required: true
+        schema:
+          id: update_recipe
+          example: {"name":"black tea", "ingredients":"tea leave, sugar,
+          hot water", "category_id":1}
     responses:
       201:
-        description: New record created successfully
+        description: Record updated successfully
       204:
         description: No Content
       400:
@@ -536,7 +558,6 @@ def update_recipe(current_user, recipe_id):
         return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
         return jsonify({"message": "No recipes with id {} was found!".format(recipe_id)}), 204
-
 
 
 @app.route('/recipe/api/v1.0/category/recipes/', methods=['GET'])
