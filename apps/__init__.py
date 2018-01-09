@@ -17,7 +17,8 @@ app.config['SWAGGER'] = {"swagger": "2.0",
                                 "title": "Yummy Recipe API",
                                 "description": "Yummy Recipe is an application that allow users to \
                                 keep track of their owesome food recipes. It helps individuals who love to cook \
-                                and eat good food to remember recipes and also share with others.",
+                                and eat good food to remember recipes and also share with others. <br /><br />\
+                                Checkout on github: https://github.com/anyric/Yummy-Recipes-Api",
                                 "version": "1.0.0",
                                 "basepath": '/',
                              },
