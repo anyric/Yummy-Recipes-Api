@@ -27,11 +27,12 @@ def token_required(function):
         if not token:
             return jsonify({"Message":"Token is missing!"}), 401
 
-        try:
-            user_data = jwt.decode(token, app.config['SECRET'])
-            current_user = Users.query.filter_by(id=user_data['id']).first()
-        except ValueError:
+        user_data = jwt.decode(token, app.config['SECRET'])
+        if not user_data:
             return jsonify({"Message":"Token is invalid!"}), 401
+
+        if user_data:
+            current_user = Users.query.filter_by(id=user_data['id']).first()
 
         return function(current_user, *args, **kwargs)
 
@@ -129,8 +130,6 @@ def update_user_password(current_user):
             user_exit.save()
             return jsonify({'Message':"Password updated successfully!"}), 201
 
-    return jsonify({"Message":"Please provide new passwords"}), 400
-
 
 @app.route('/recipe/api/v1.0/user/view', methods=['GET'])
 @token_required
@@ -142,15 +141,17 @@ def view_users(current_user):
     responses:
       200:
         description: Ok
-      204:
-        description: No Content
+      404:
+        description: Not Found
     """
     userlist = Users.getusers()
 
     if userlist:
-        return jsonify(userlist), 200
+        response = jsonify(userlist), 200
     else:
-        return jsonify({"Message":"No registered user found!"}), 204
+        response = jsonify({"Message":"No registered user found!"}), 204
+
+    return response
 
 
 @app.route('/recipe/api/v1.0/user/login', methods=['POST'])
@@ -178,19 +179,15 @@ def login_user():
     password = str(request.json.get('password', '')).strip()
 
     if not username or not password:
-        return make_response('could not verify', 401, \
+        return make_response('Invalid username or password', 400, \
                                 {'WWW-Authentication' : 'Basic realm="Login required!'})
 
     user = Users.query.filter(Users.username == username, Users.password == password).first()
 
     if user:
-        token = jwt.encode(
-            {'id':user.id, 'exp':datetime.datetime.utcnow()+ datetime.timedelta(hours=720)},
-            app.config['SECRET'])#expires after 30 days
+        token = BlacklistTokens.generate_token(user.id)
         return jsonify({'token': token.decode('UTF-8')}), 200
 
-    return make_response('Invalid username or password', 401, \
-                            {'WWW-Authentication' : 'Basic realm="Login required!'})
 
 @app.route('/recipe/api/v1.0/user/logout')
 @token_required

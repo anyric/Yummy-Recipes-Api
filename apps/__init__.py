@@ -31,8 +31,8 @@ app.config['SWAGGER'] = {"swagger": "2.0",
                              }}
 
 app.config.from_object(config_name)
-app.config['PAGINATION_PAGE_SIZE']=2
-app.config['PAGINATION_PAGE_ARGUMENT_NAME']='page'
+# app.config['PAGINATION_PAGE_SIZE']=2
+# app.config['PAGINATION_PAGE_ARGUMENT_NAME']='page'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 Swagger(app)
