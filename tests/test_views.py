@@ -309,7 +309,7 @@ class ViewTests(TestCase):
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/?q=p', headers=\
         self.get_header_token())
-        self.assertEqual(get_response.status_code, 204)
+        self.assertEqual(get_response.status_code, 404)
 
     def test_invalid_view_category(self):
         """function to test view_category view"""
@@ -348,7 +348,7 @@ class ViewTests(TestCase):
 
         get_response = self.test_client.get('/recipe/api/v1.0/category/2', headers=\
         self.get_header_token())
-        self.assertEqual(get_response.status_code, 204)
+        self.assertEqual(get_response.status_code, 404)
 
     def test_category_unauthorized_user(self):
         """function to test view_category_by_id with invalid user"""
@@ -435,7 +435,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.delete('/recipe/api/v1.0/category/2', headers=\
         self.get_header_token(), content_type='application/json')
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)
 
     def test_delete_category_ok(self):
         """function to test delete_category deletes ok"""
@@ -556,7 +556,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.put('/recipe/api/v1.0/category/recipes/2', headers=\
         self.get_header_token(), data=json.dumps(data), content_type='application/json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
     def test_update_missing_value(self):
         """function to test update_recipe missing value """
@@ -578,7 +578,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.put('/recipe/api/v1.0/category/recipes/1', headers=\
         self.get_header_token(), data=json.dumps(data), content_type='application/json')
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)
 
     def test_update_recipe(self):
         """function to test update_recipe value """
@@ -660,7 +660,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/?q=b', headers=\
         self.get_header_token(), content_type='application/json')
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)
 
     def test_view_recipe_not_found(self):
         """function to test view_recipe endpoint not found"""
@@ -719,7 +719,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.get('/recipe/api/v1.0/category/recipes/2', headers=\
         self.get_header_token(), content_type='application/json')
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)
 
     def test_view_recipe_by_category_ok(self):
         """function to test view_recipe by category id"""
@@ -818,7 +818,7 @@ class ViewTests(TestCase):
 
         response = self.test_client.delete('/recipe/api/v1.0/category/recipes/3', headers=\
         self.get_header_token(), content_type='application/json')
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 404)
 
     def test_delete_recipe_by_id_ok(self):
         """function to test view_recipe with no category and recipe found"""
