@@ -1,6 +1,7 @@
 """ module to manage users"""
-from datetime import datetime
-from apps import db
+import datetime
+import jwt
+from apps import db, app
 
 class Users(db.Model):
     """model to store user details """
@@ -57,7 +58,7 @@ class BlacklistTokens(db.Model):
 
     def __init__(self, token):
         self.token = token
-        self.date_blacklisted = datetime.utcnow()
+        self.date_blacklisted = datetime.datetime.utcnow()
 
 
     def save(self):
@@ -73,6 +74,14 @@ class BlacklistTokens(db.Model):
             return True
         else:
             return False
+    @staticmethod
+    def generate_token(user_id):
+        """method to generate token"""
+        token = jwt.encode(
+            {'id':user_id, 'exp':datetime.datetime.utcnow()+ datetime.timedelta(hours=720)},
+            app.config['SECRET'])#expires after 30 days
+
+        return token
 
     def __repr__(self):
         return '<id: token: {}'.format(self.token)

@@ -35,14 +35,6 @@ class ViewTests(TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def create_header_content_type(self):
-        """method to create header content type"""
-        content_type = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-        return content_type
-
     def get_header_token(self):
         """function to retrieve token from header"""
         data = {"username":self.test_username, "password":self.test_password}
@@ -111,6 +103,32 @@ class ViewTests(TestCase):
         response = self.test_client.get('/recipe/api/v1.0/category/')
         self.assertEqual(response.status_code, 401)
 
+    def test_login_user_ok(self):
+        """function to test user login is ok"""
+        self.register_new_user(self.firstname, self.lastname, \
+                                            self.test_username, self.test_password)
+
+        log_data = {"username":self.test_username, "password":self.test_password}
+
+        response = self.client.post('/recipe/api/v1.0/user/login', data=json.dumps(log_data), \
+                                        content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_login_user_failed(self):
+        """function to test user login failed"""
+        self.register_new_user(self.firstname, self.lastname, \
+                                            self.test_username, self.test_password)
+        # log_data = {"username":self.test_username, "password":self.test_password}
+        log_data = {"username":'', "password":''}
+        response = self.client.post('/recipe/api/v1.0/user/login', data=json.dumps(log_data), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+
+
+
+
+
     def test_view_user(self):
         """function to test view_user endpoint"""
         self.register_new_user(self.firstname, self.lastname, \
@@ -129,6 +147,16 @@ class ViewTests(TestCase):
         "function to test no  view_user found"
         response = self.test_client.get('/recipe/api/v1.0/users/view')
         self.assertEquals(response.status_code, 404)
+
+    def test_view_user_no_registered(self):
+        "function to test no no users found"
+
+        data = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NSwiZXhwIjoxNTE4MTcwNDA2fQ.H1zVV9_Gbkwj488nfT8D0HXTTsdrBO_e23onGIkswG4"
+        token = {"x-access-token": data}
+
+        response = self.test_client.get('/recipe/api/v1.0/users/view', \
+                                        headers=token)
+        self.assertEqual(response.status_code, 404)
 
     def test_delete_user_ok(self):
         """function to test user can be deleted"""
