@@ -1,7 +1,5 @@
 """module to create pagination"""
-from flask import url_for
-from flask import current_app
-
+from flask import url_for, jsonify
 
 class PaginationHelper():
     """helper class to generate paginated list of items"""
@@ -32,6 +30,7 @@ class PaginationHelper():
                 _external=True)
         else:
             previous_page_url = None
+        # paginated_objects.count().page_number
         if paginated_objects.has_next:
             next_page_url = url_for(
                 self.resource_for_url,

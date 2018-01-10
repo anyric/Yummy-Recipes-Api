@@ -60,7 +60,6 @@ class BlacklistTokens(db.Model):
         self.token = token
         self.date_blacklisted = datetime.datetime.utcnow()
 
-
     def save(self):
         """method to store new user"""
         db.session.add(self)
