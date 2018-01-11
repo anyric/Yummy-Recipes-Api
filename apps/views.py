@@ -632,21 +632,33 @@ def view_recipe_by_category(current_user, category_id):
     if category_id > 0:
         categorylists = Category.query.filter(Category.user_id == current_user.id, \
                                                 Category.id == category_id).first()
-        recipes = Recipe.query.filter_by(category_id=category_id)
+        recipes = Recipe.query.filter(category_id == category_id).all()
 
         if not categorylists or not recipes or not categorylists.user_id == current_user.id:
             return jsonify({"message": "No record found!"}), 404
 
-        results = {}
-        for recipe in recipes:
-            if recipe:
-                results["id"] = recipe.id
-                results["name"] = recipe.name
-                results["category"] = recipe.category_id
-                results["ingredients"] = recipe.ingredients
-                results["date_modified"] = recipe.date_modified
+        results = []
+        # for recipe in recipes:
+        #     if recipe:
+        #         results["id"] = recipe.id
+        #         results["name"] = recipe.name
+        #         results["category"] = recipe.category_id
+        #         results["ingredients"] = recipe.ingredients
+        #         results["date_modified"] = recipe.date_modified
 
-                return jsonify(results), 200
+        #         return jsonify(results), 200
+
+        for recipe in recipes:
+            obj = {
+                "id": recipe.id,
+                "name": recipe.name,
+                "ingredients": recipe.ingredients,
+                "category_id": recipe.category_id,
+                "date_modified": recipe.date_modified
+            }
+            results.append(obj)
+            return jsonify(results), 200
+
 
     return jsonify({"message":"Invalid category id!"}), 400
 

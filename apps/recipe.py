@@ -29,7 +29,7 @@ class Recipe(db.Model):
 
     def get_all(self, category_id):
         """method to retrieve all recipes of a given category"""
-        return Recipe.query.filter_by(category_id=category_id)
+        return Recipe.query.filter_by(category_id=category_id).all()
 
     def delete(self):
         """method to delete a recipe"""
