@@ -25,19 +25,16 @@ class Users(db.Model):
         db.session.commit()
 
     @staticmethod
-    def getusers():
+    def getuser(current_user):
         """method to retrieve users"""
-        userlist = Users.query.all()
-        results = []
-
-        for user in userlist:
-            obj = {
-                'id': user.id,
-                'firstname': user.firstname,
-                'lastname':user.lastname,
-                'username': user.username
-                }
-            results.append(obj)
+        # userlist = Users.query.all()
+        userlist = Users.query.filter_by(id=current_user.id).first()
+        results = {}
+        if userlist:
+            results["id"] = userlist.id
+            results["firstname"] = userlist.firstname
+            results["lastname"] = userlist.lastname
+            results["username"] = userlist.username
 
         return results
 

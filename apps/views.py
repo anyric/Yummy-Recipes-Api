@@ -144,10 +144,12 @@ def view_users(current_user):
       404:
         description: Not Found
     """
-    userlist = Users.getusers()
+    userlist = Users.getuser(current_user)
 
     if userlist:
-        response = jsonify(userlist), 200
+        print(userlist)
+        response = jsonify({"User":userlist}), 200
+        # response = jsonify({"ammmmmm"})
     else:
         response = jsonify({"message":"No registered user found!"}), 404
 

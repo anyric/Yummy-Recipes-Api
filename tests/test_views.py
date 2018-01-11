@@ -119,15 +119,11 @@ class ViewTests(TestCase):
         """function to test user login failed"""
         self.register_new_user(self.firstname, self.lastname, \
                                             self.test_username, self.test_password)
-        # log_data = {"username":self.test_username, "password":self.test_password}
+
         log_data = {"username":'', "password":''}
-        response = self.client.post('/recipe/api/v1.0/user/login', data=json.dumps(log_data), content_type='application/json')
+        response = self.client.post('/recipe/api/v1.0/user/login', data=json.dumps(log_data), \
+        content_type='application/json')
         self.assertEqual(response.status_code, 400)
-
-
-
-
-
 
     def test_view_user(self):
         """function to test view_user endpoint"""
