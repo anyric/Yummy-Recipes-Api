@@ -74,13 +74,13 @@
 <p id="n5" class="stm run hide_run"><a href="#n5">5</a></p>
 <p id="n6" class="stm run hide_run"><a href="#n6">6</a></p>
 <p id="n7" class="stm run hide_run"><a href="#n7">7</a></p>
-<p id="n8" class="stm run hide_run"><a href="#n8">8</a></p>
-<p id="n9" class="pln"><a href="#n9">9</a></p>
-<p id="n10" class="stm run hide_run"><a href="#n10">10</a></p>
+<p id="n8" class="pln"><a href="#n8">8</a></p>
+<p id="n9" class="stm run hide_run"><a href="#n9">9</a></p>
+<p id="n10" class="pln"><a href="#n10">10</a></p>
 <p id="n11" class="stm run hide_run"><a href="#n11">11</a></p>
-<p id="n12" class="pln"><a href="#n12">12</a></p>
-<p id="n13" class="stm run hide_run"><a href="#n13">13</a></p>
-<p id="n14" class="pln"><a href="#n14">14</a></p>
+<p id="n12" class="stm run hide_run"><a href="#n12">12</a></p>
+<p id="n13" class="pln"><a href="#n13">13</a></p>
+<p id="n14" class="stm run hide_run"><a href="#n14">14</a></p>
 <p id="n15" class="pln"><a href="#n15">15</a></p>
 <p id="n16" class="pln"><a href="#n16">16</a></p>
 <p id="n17" class="pln"><a href="#n17">17</a></p>
@@ -99,19 +99,21 @@
 <p id="n30" class="pln"><a href="#n30">30</a></p>
 <p id="n31" class="pln"><a href="#n31">31</a></p>
 <p id="n32" class="pln"><a href="#n32">32</a></p>
-<p id="n33" class="stm run hide_run"><a href="#n33">33</a></p>
+<p id="n33" class="pln"><a href="#n33">33</a></p>
 <p id="n34" class="stm run hide_run"><a href="#n34">34</a></p>
-<p id="n35" class="stm run hide_run"><a href="#n35">35</a></p>
-<p id="n36" class="stm run hide_run"><a href="#n36">36</a></p>
-<p id="n37" class="pln"><a href="#n37">37</a></p>
-<p id="n38" class="stm run hide_run"><a href="#n38">38</a></p>
+<p id="n35" class="pln"><a href="#n35">35</a></p>
+<p id="n36" class="pln"><a href="#n36">36</a></p>
+<p id="n37" class="stm run hide_run"><a href="#n37">37</a></p>
+<p id="n38" class="pln"><a href="#n38">38</a></p>
 <p id="n39" class="stm run hide_run"><a href="#n39">39</a></p>
 <p id="n40" class="stm run hide_run"><a href="#n40">40</a></p>
 <p id="n41" class="stm run hide_run"><a href="#n41">41</a></p>
 <p id="n42" class="stm run hide_run"><a href="#n42">42</a></p>
-<p id="n43" class="pln"><a href="#n43">43</a></p>
+<p id="n43" class="stm run hide_run"><a href="#n43">43</a></p>
 <p id="n44" class="pln"><a href="#n44">44</a></p>
 <p id="n45" class="stm run hide_run"><a href="#n45">45</a></p>
+<p id="n46" class="stm run hide_run"><a href="#n46">46</a></p>
+<p id="n47" class="stm run hide_run"><a href="#n47">47</a></p>
 
             </td>
             <td class="text">
@@ -122,44 +124,46 @@
 <p id="t5" class="stm run hide_run"><span class="key">from</span> <span class="nam">flask_httpauth</span> <span class="key">import</span> <span class="nam">HTTPBasicAuth</span><span class="strut">&nbsp;</span></p>
 <p id="t6" class="stm run hide_run"><span class="key">from</span> <span class="nam">flask_heroku</span> <span class="key">import</span> <span class="nam">Heroku</span><span class="strut">&nbsp;</span></p>
 <p id="t7" class="stm run hide_run"><span class="key">from</span> <span class="nam">flasgger</span> <span class="key">import</span> <span class="nam">Swagger</span><span class="strut">&nbsp;</span></p>
-<p id="t8" class="stm run hide_run"><span class="key">from</span> <span class="nam">apps</span> <span class="key">import</span> <span class="nam">config</span><span class="strut">&nbsp;</span></p>
-<p id="t9" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t10" class="stm run hide_run"><span class="nam">app</span> <span class="op">=</span> <span class="nam">Flask</span><span class="op">(</span><span class="nam">__name__</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t11" class="stm run hide_run"><span class="nam">config_name</span> <span class="op">=</span> <span class="nam">config</span><span class="op">.</span><span class="nam">DevelopmentConfig</span><span class="strut">&nbsp;</span></p>
-<p id="t12" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t13" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">'SWAGGER'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="str">"swagger"</span><span class="op">:</span> <span class="str">"2.0"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t14" class="pln">                             <span class="str">"title"</span><span class="op">:</span> <span class="str">"Yummy Recipes"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t15" class="pln">                             <span class="str">"uiversion"</span><span class="op">:</span> <span class="num">2</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t16" class="pln">                             <span class="str">"info"</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t17" class="pln">                                <span class="str">"title"</span><span class="op">:</span> <span class="str">"Yummy Recipe API"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t18" class="pln">                                <span class="str">"description"</span><span class="op">:</span> <span class="str">"Yummy Recipe is an application that allow users to \</span><span class="strut">&nbsp;</span></p>
-<p id="t19" class="pln"><span class="str">                                keep track of their owesome food recipes. It helps individuals who love to cook \</span><span class="strut">&nbsp;</span></p>
-<p id="t20" class="pln"><span class="str">                                and eat good food to remember recipes and also share with others. &lt;br />&lt;br />\</span><span class="strut">&nbsp;</span></p>
-<p id="t21" class="pln"><span class="str">                                Checkout on github: https://github.com/anyric/Yummy-Recipes-Api"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t22" class="pln">                                <span class="str">"version"</span><span class="op">:</span> <span class="str">"1.0.0"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t23" class="pln">                                <span class="str">"basepath"</span><span class="op">:</span> <span class="str">'/'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t24" class="pln">                             <span class="op">}</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t25" class="pln">                             <span class="str">"securityDefinitions"</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t26" class="pln">                                <span class="str">"TokenHeader"</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
-<p id="t27" class="pln">                                    <span class="str">"type"</span><span class="op">:</span> <span class="str">"apiKey"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t28" class="pln">                                    <span class="str">"name"</span><span class="op">:</span> <span class="str">"x-access-token"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t29" class="pln">                                    <span class="str">"in"</span><span class="op">:</span> <span class="str">"header"</span><span class="strut">&nbsp;</span></p>
-<p id="t30" class="pln">                                <span class="op">}</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
-<p id="t31" class="pln">                             <span class="op">}</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
-<p id="t32" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t33" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">from_object</span><span class="op">(</span><span class="nam">config_name</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t34" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">'PAGINATION_PAGE_SIZE'</span><span class="op">]</span><span class="op">=</span><span class="num">2</span><span class="strut">&nbsp;</span></p>
-<p id="t35" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">'PAGINATION_PAGE_ARGUMENT_NAME'</span><span class="op">]</span><span class="op">=</span><span class="str">'page'</span><span class="strut">&nbsp;</span></p>
-<p id="t36" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">'SQLALCHEMY_TRACK_MODIFICATIONS'</span><span class="op">]</span> <span class="op">=</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
-<p id="t37" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t38" class="stm run hide_run"><span class="nam">Swagger</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t39" class="stm run hide_run"><span class="nam">heroku</span> <span class="op">=</span> <span class="nam">Heroku</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t40" class="stm run hide_run"><span class="nam">auth</span> <span class="op">=</span> <span class="nam">HTTPBasicAuth</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t41" class="stm run hide_run"><span class="nam">db</span> <span class="op">=</span> <span class="nam">SQLAlchemy</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t42" class="stm run hide_run"><span class="nam">ma</span> <span class="op">=</span> <span class="nam">Marshmallow</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
-<p id="t43" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t8" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t9" class="stm run hide_run"><span class="key">from</span> <span class="nam">apps</span><span class="op">.</span><span class="nam">utilities</span> <span class="key">import</span> <span class="nam">config</span><span class="strut">&nbsp;</span></p>
+<p id="t10" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t11" class="stm run hide_run"><span class="nam">app</span> <span class="op">=</span> <span class="nam">Flask</span><span class="op">(</span><span class="nam">__name__</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t12" class="stm run hide_run"><span class="nam">config_name</span> <span class="op">=</span> <span class="nam">config</span><span class="op">.</span><span class="nam">DevelopmentConfig</span><span class="strut">&nbsp;</span></p>
+<p id="t13" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t14" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">'SWAGGER'</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span><span class="str">"swagger"</span><span class="op">:</span> <span class="str">"2.0"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t15" class="pln">                             <span class="str">"title"</span><span class="op">:</span> <span class="str">"Yummy Recipes"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t16" class="pln">                             <span class="str">"uiversion"</span><span class="op">:</span> <span class="num">2</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t17" class="pln">                             <span class="str">"info"</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t18" class="pln">                                <span class="str">"title"</span><span class="op">:</span> <span class="str">"Yummy Recipe API"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t19" class="pln">                                <span class="str">"description"</span><span class="op">:</span> <span class="str">"Yummy Recipe is an application that allow users to \</span><span class="strut">&nbsp;</span></p>
+<p id="t20" class="pln"><span class="str">                                keep track of their owesome food recipes. It helps individuals who love to cook \</span><span class="strut">&nbsp;</span></p>
+<p id="t21" class="pln"><span class="str">                                and eat good food to remember recipes and also share with others. &lt;br />&lt;br />\</span><span class="strut">&nbsp;</span></p>
+<p id="t22" class="pln"><span class="str">                                Checkout on github: https://github.com/anyric/Yummy-Recipes-Api"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t23" class="pln">                                <span class="str">"version"</span><span class="op">:</span> <span class="str">"1.0.0"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t24" class="pln">                                <span class="str">"basepath"</span><span class="op">:</span> <span class="str">'/'</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t25" class="pln">                             <span class="op">}</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t26" class="pln">                             <span class="str">"securityDefinitions"</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t27" class="pln">                                <span class="str">"TokenHeader"</span><span class="op">:</span> <span class="op">{</span><span class="strut">&nbsp;</span></p>
+<p id="t28" class="pln">                                    <span class="str">"type"</span><span class="op">:</span> <span class="str">"apiKey"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t29" class="pln">                                    <span class="str">"name"</span><span class="op">:</span> <span class="str">"x-access-token"</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t30" class="pln">                                    <span class="str">"in"</span><span class="op">:</span> <span class="str">"header"</span><span class="strut">&nbsp;</span></p>
+<p id="t31" class="pln">                                <span class="op">}</span><span class="op">,</span><span class="strut">&nbsp;</span></p>
+<p id="t32" class="pln">                             <span class="op">}</span><span class="op">}</span><span class="strut">&nbsp;</span></p>
+<p id="t33" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t34" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">from_object</span><span class="op">(</span><span class="nam">config_name</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t35" class="pln"><span class="com"># app.config['PAGINATION_PAGE_SIZE']=2</span><span class="strut">&nbsp;</span></p>
+<p id="t36" class="pln"><span class="com"># app.config['PAGINATION_PAGE_ARGUMENT_NAME']='page'</span><span class="strut">&nbsp;</span></p>
+<p id="t37" class="stm run hide_run"><span class="nam">app</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">'SQLALCHEMY_TRACK_MODIFICATIONS'</span><span class="op">]</span> <span class="op">=</span> <span class="key">False</span><span class="strut">&nbsp;</span></p>
+<p id="t38" class="pln"><span class="strut">&nbsp;</span></p>
+<p id="t39" class="stm run hide_run"><span class="nam">Swagger</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t40" class="stm run hide_run"><span class="nam">heroku</span> <span class="op">=</span> <span class="nam">Heroku</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t41" class="stm run hide_run"><span class="nam">auth</span> <span class="op">=</span> <span class="nam">HTTPBasicAuth</span><span class="op">(</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t42" class="stm run hide_run"><span class="nam">db</span> <span class="op">=</span> <span class="nam">SQLAlchemy</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
+<p id="t43" class="stm run hide_run"><span class="nam">ma</span> <span class="op">=</span> <span class="nam">Marshmallow</span><span class="op">(</span><span class="nam">app</span><span class="op">)</span><span class="strut">&nbsp;</span></p>
 <p id="t44" class="pln"><span class="strut">&nbsp;</span></p>
-<p id="t45" class="stm run hide_run"><span class="key">from</span> <span class="nam">apps</span><span class="op">.</span><span class="nam">views</span> <span class="key">import</span> <span class="op">*</span><span class="strut">&nbsp;</span></p>
+<p id="t45" class="stm run hide_run"><span class="key">from</span> <span class="nam">apps</span><span class="op">.</span><span class="nam">views</span><span class="op">.</span><span class="nam">user_view</span> <span class="key">import</span> <span class="op">*</span><span class="strut">&nbsp;</span></p>
+<p id="t46" class="stm run hide_run"><span class="key">from</span> <span class="nam">apps</span><span class="op">.</span><span class="nam">views</span><span class="op">.</span><span class="nam">recipe_view</span> <span class="key">import</span> <span class="op">*</span><span class="strut">&nbsp;</span></p>
+<p id="t47" class="stm run hide_run"><span class="key">from</span> <span class="nam">apps</span><span class="op">.</span><span class="nam">views</span><span class="op">.</span><span class="nam">category_view</span> <span class="key">import</span> <span class="op">*</span><span class="strut">&nbsp;</span></p>
 
             </td>
         </tr>
@@ -170,7 +174,7 @@
     <div class="content">
         <p>
             <a class="nav" href="index.html">&#xab; index</a> &nbsp; &nbsp; <a class="nav" href="https://coverage.readthedocs.io">coverage.py v4.4.2</a>,
-            created at 2018-01-10 08:34
+            created at 2018-01-14 20:14
         </p>
     </div>
 </div>

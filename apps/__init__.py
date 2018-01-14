@@ -5,7 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 from flask_heroku import Heroku
 from flasgger import Swagger
-from apps import config
+
+from apps.utilities import config
 
 app = Flask(__name__)
 config_name = config.DevelopmentConfig
@@ -41,5 +42,6 @@ auth = HTTPBasicAuth()
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
-
-from apps.views import *
+from apps.views.user_view import *
+from apps.views.recipe_view import *
+from apps.views.category_view import *
