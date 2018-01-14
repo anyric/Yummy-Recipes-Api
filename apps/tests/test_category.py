@@ -104,6 +104,35 @@ class CategoryTests(TestCase):
         self.assertEqual(get_response.status_code, 200)
         self.assertEqual('application/json', get_response.headers['Content-Type'])
 
+
+    
+    def test_view_category_page(self):
+        """function to test view_category with wrong page number"""
+        self.register_new_user(self.name, self.email, \
+                                self.test_username, self.test_password)
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, new_category_name, description)
+        get_response = self.test_client.get('/recipe/api/v1.0/category/?page=3', headers=\
+        self.get_header_token())
+        self.assertEqual(get_response.status_code, 404)
+        self.assertEqual('application/json', get_response.headers['Content-Type'])
+
+    
+    def test_view_category_search_page(self):
+        """function to test view_category with search and page parameters"""
+        self.register_new_user(self.name, self.email, \
+                                self.test_username, self.test_password)
+        user = Users.query.filter_by(username=self.test_username).first()
+        new_category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, new_category_name, description)
+        get_response = self.test_client.get('/recipe/api/v1.0/category/?page=3&q=l', headers=\
+        self.get_header_token())
+        self.assertEqual(get_response.status_code, 404)
+        self.assertEqual('application/json', get_response.headers['Content-Type'])
+
     def test_category_search_valid(self):
         """function to test view_category search work ok"""
         self.register_new_user(self.name, self.email, \
