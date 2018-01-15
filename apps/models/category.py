@@ -29,10 +29,23 @@ class Category(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def update(self, category_name, description):
+        """method to update category"""
+        self.name = category_name
+        self.description = description
+        self.date_modified = datetime.utcnow()
+        self.save()
+
     def delete(self):
         """method to delete a category"""
         db.session.delete(self)
         db.session.commit()
+    @staticmethod
+    def get_category_by_id(category_id, current_user):
+        """method to get a category by id"""
+        category = Category.query.filter(Category.id == category_id, \
+                                        Category.user_id == current_user.id).first()
+        return category
 
 
 class CategorySchema(ma.Schema):

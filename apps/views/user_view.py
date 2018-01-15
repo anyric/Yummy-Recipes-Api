@@ -85,18 +85,20 @@ def update_user_password():
 
     if re.match(r'[a-zA-Z0-9.-_]+@[a-z]+\.[a-z]+', email):
         if new_password.isalpha():
-            return jsonify({"message":"password can't be only alphabets"}), 400
-
-        user_exit = Users.query.filter_by(email=email).first()
-        if user_exit.password == new_password:
-            return jsonify({"message":"New password can't be the same as old password"}), 400
-
-        if user_exit:
-            user_exit.password = new_password
-            user_exit.save()
-            return jsonify({'message':"Password updated successfully!"}), 201
+            response = jsonify({"message":"password can't be only alphabets"}), 400
+        else:
+            user_exit = Users.query.filter_by(email=email).first()
+            if user_exit.password == new_password:
+                response = jsonify({"message":"New password can't be the same as old password"}), 400
+            else:
+                if user_exit:
+                    user_exit.password = new_password
+                    user_exit.save()
+                    response = jsonify({'message':"Password updated successfully!"}), 201
     else:
-        return jsonify({"message":"wrong email format!"}), 400
+        response = jsonify({"message":"wrong email format!"}), 400
+
+    return response
 
 @app.route('/recipe/api/v1.0/user/view', methods=['GET'])
 @token_required
