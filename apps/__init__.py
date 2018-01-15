@@ -32,8 +32,6 @@ app.config['SWAGGER'] = {"swagger": "2.0",
                              }}
 
 app.config.from_object(config_name)
-# app.config['PAGINATION_PAGE_SIZE']=2
-# app.config['PAGINATION_PAGE_ARGUMENT_NAME']='page'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 Swagger(app)
@@ -41,6 +39,22 @@ heroku = Heroku(app)
 auth = HTTPBasicAuth()
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
+
+
+@app.errorhandler(404)
+def pageNotFound(error):
+    """function to handle internal server errors"""
+    return jsonify({"message":"page not found!"}), 404
+
+@app.errorhandler(405)
+def wrongRequestMethod(error):
+    """function to handle internal server errors"""
+    return jsonify({"message":"wrong request method!"}), 405
+
+@app.errorhandler(500)
+def serverDown(error):
+    """function to handle internal server errors"""
+    return jsonify({"message":"server down!"}), 500
 
 from apps.views.user_view import *
 from apps.views.recipe_view import *

@@ -6,12 +6,6 @@ from apps.models.user import Users, BlacklistTokens
 from apps import app
 from apps.utilities.decode_token import token_required
 
-@app.errorhandler(404)
-def pageNotFound(error):
-    """function to handle internal server errors"""
-    return jsonify({"message":"page not found!"}), 404
-
-
 @app.route('/recipe/api/v1.0/user/register', methods=['POST'])
 def register_new_user():
     """function to create new user

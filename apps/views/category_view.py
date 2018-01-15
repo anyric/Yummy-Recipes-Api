@@ -10,11 +10,6 @@ from apps.utilities.paginate import PaginationHelper
 category_schema = CategorySchema()
 category_schema = CategorySchema(many=True)
 
-@app.errorhandler(404)
-def pageNotFound(error):
-    """function to handle internal server errors"""
-    return jsonify({"message":"Bad request!"}), 400
-
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
 @token_required
 def create_new_category(current_user):

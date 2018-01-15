@@ -12,12 +12,6 @@ from apps.utilities.paginate import PaginationHelper
 recipe_schema = RecipeSchema()
 recipe_schema = RecipeSchema(many=True)
 
-
-@app.errorhandler(404)
-def pageNotFound(error):
-    """function to handle internal server errors"""
-    return jsonify({"message":"page not found!"}), 404
-
 @app.route('/recipe/api/v1.0/category/recipes', methods=['POST'])
 @token_required
 def new_recipe(current_user):
