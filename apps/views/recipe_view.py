@@ -39,9 +39,9 @@ def new_recipe(current_user):
     ingredients = str(data['ingredients']).strip()
     category_id = data['category_id']
 
-    if recipe_name and ingredients and category_id and isinstance(category_id, int) and category_id > 0:
-        category = Category.query.filter(Category.id == category_id, \
-                                        Category.user_id == current_user.id).first()
+    if recipe_name and ingredients and category_id and isinstance(category_id, int) \
+        and category_id > 0:
+        category = Category.get_category_by_id(category_id, current_user)
 
         if not category:
             return jsonify({"message":"wrong category id or don't belong to you!"}), 404
@@ -85,18 +85,18 @@ def update_recipe(current_user, recipe_id):
     """
     recipe_name = str(request.json.get('name', '')).strip()
     ingredients = str(request.json.get('ingredients', '')).strip()
-
-    recipe = Recipe.query.filter(Recipe.id == recipe_id, Recipe.user_id == current_user.id).first()
+    recipe = Recipe.get_recipe_by_id(recipe_id, current_user)
 
     if not recipe:
         return jsonify({"message":"No recipe with id {} was found or doesn't blongs to you!".\
                         format(recipe_id)}), 404
 
     if recipe_name and ingredients and not recipe.name == recipe_name:
-        recipe.name = recipe_name
-        recipe.ingredients = ingredients
-        recipe.date_modified = datetime.datetime.utcnow()
-        recipe.save()
+        # recipe.name = recipe_name
+        # recipe.ingredients = ingredients
+        # recipe.date_modified = datetime.datetime.utcnow()
+        recipe.update_recipe(recipe_name, ingredients)
+        # recipe.save()
         return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
         return jsonify({"message": " recipes with name {} already exists!".\
@@ -177,8 +177,7 @@ def view_recipe_by_category(current_user, category_id):
     """
 
     if isinstance(category_id, int) and category_id > 0:
-        recipes = Recipe.query.filter(Recipe.category_id == category_id, \
-        Recipe.user_id == current_user.id).all()
+        recipes = Recipe.get_recipe_category_id(category_id, current_user)
 
         if not recipes:
             return jsonify({"message":'No recipe found'}), 404
@@ -262,8 +261,7 @@ def delete_recipe(current_user, recipe_id):
         description: Bad Request
     """
     if isinstance(recipe_id, int) and recipe_id > 0:
-        recipe = Recipe.query.filter(Recipe.id == recipe_id, \
-        Recipe.user_id == current_user.id).first()
+        recipe = Recipe.get_recipe_by_id(recipe_id, current_user)
 
         if not recipe:
             return jsonify({"message":"No recipe found!"}), 404

@@ -85,11 +85,11 @@ def update_category(current_user, category_id):
         return jsonify({"message":"No category found!"}), 400
 
     if category_name and description and category.user_id == current_user.id:
-
-        category.name = category_name
-        category.description = description
-        category.date_modified = datetime.datetime.utcnow()
-        category.save()
+        # category.name = category_name
+        # category.description = description
+        # category.date_modified = datetime.datetime.utcnow()
+        # category.save()
+        category.update(category_name, description)
         return jsonify({"message": "category {} was updated successfully".format(category.id)}), 201
     else:
         return jsonify({"message": "Please enter new details and \
@@ -171,8 +171,7 @@ def view_category_by_id(current_user, category_id):
         description: Not Found
     """
     if isinstance(category_id, int) and category_id > 0 and current_user:
-        categorylists = Category.query.filter(Category.id == category_id, \
-                                                Category.user_id == current_user.id).first()
+        categorylists = Category.get_category_by_id(category_id, current_user)
 
         if not categorylists:
             return jsonify({"message": "No category found!"}), 404
@@ -188,6 +187,7 @@ def view_category_by_id(current_user, category_id):
                 return jsonify(results), 200
     else:
         return jsonify({"message":"invalid value!"}), 404
+
 
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
@@ -209,8 +209,7 @@ def delete_category(current_user, category_id):
         description: Not Found
     """
     if isinstance(category_id, int) and category_id > 0 and current_user:
-        category = Category.query.filter(Category.id == category_id, \
-                                        Category.user_id == current_user.id).first()
+        category = Category.get_category_by_id(category_id, current_user)
 
         if not category:
             return jsonify({"message":"No category found!"}), 404

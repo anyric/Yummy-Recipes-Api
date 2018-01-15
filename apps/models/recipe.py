@@ -24,15 +24,36 @@ class Recipe(db.Model):
         self.name = name
         self.ingredients = incredients
         self.date_modified = datetime.utcnow()
-
+    
     def save(self):
         """method to store new recipe"""
         db.session.add(self)
         db.session.commit()
 
+    def update_recipe(self, recipe_name, ingredients):
+        """method to update recipe"""
+        self.name = recipe_name
+        self.ingredients = ingredients
+        self.date_modified = datetime.utcnow()
+        self.save()
+
+
     def get_all(self, category_id):
         """method to retrieve all recipes of a given category"""
         return Recipe.query.filter_by(category_id=category_id).all()
+    @staticmethod
+    def get_recipe_category_id(category_id, current_user):
+        """method to retrieve all recipes of a given category and user id"""
+        recipes = Recipe.query.filter(Recipe.category_id == category_id, \
+        Recipe.user_id == current_user.id).all()
+        return recipes
+
+    @staticmethod
+    def get_recipe_by_id(recipe_id, current_user):
+        """method to retrieve all recipes of a given category and user id"""
+        recipe = Recipe.query.filter(Recipe.id == recipe_id, \
+        Recipe.user_id == current_user.id).first()
+        return recipe
 
     def delete(self):
         """method to delete a recipe"""
