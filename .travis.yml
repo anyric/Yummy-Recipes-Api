@@ -15,7 +15,7 @@ before_script:
 env:
   DATABASE_URL = 'postgresql://localhost/test_db'
 script:
-  - nosetests --with-coverage --cover-package=apps
+  - nosetests --with-coverage --cover-package=apps/tests
 after_success:
   - coveralls
   - codeclimate
