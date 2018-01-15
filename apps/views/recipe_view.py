@@ -57,7 +57,6 @@ def new_recipe(current_user):
     else:
         return jsonify({"message":"Invalid values"}), 400
 
-
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['PUT'])
 @token_required
 def update_recipe(current_user, recipe_id):
@@ -92,16 +91,11 @@ def update_recipe(current_user, recipe_id):
                         format(recipe_id)}), 404
 
     if recipe_name and ingredients and not recipe.name == recipe_name:
-        # recipe.name = recipe_name
-        # recipe.ingredients = ingredients
-        # recipe.date_modified = datetime.datetime.utcnow()
         recipe.update_recipe(recipe_name, ingredients)
-        # recipe.save()
         return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
         return jsonify({"message": " recipes with name {} already exists!".\
                         format(recipe_name)}), 404
-
 
 @app.route('/recipe/api/v1.0/category/recipes/', methods=['GET'])
 @token_required
@@ -175,7 +169,6 @@ def view_recipe_by_category(current_user, category_id):
       400:
         description: Bad Request
     """
-
     if isinstance(category_id, int) and category_id > 0:
         recipes = Recipe.get_recipe_category_id(category_id, current_user)
 
@@ -233,7 +226,6 @@ def view_recipe_by_id(current_user, category_id, recipe_id):
                 results["category"] = recipe.category_id
                 results["ingredients"] = recipe.ingredients
                 results["date_modified"] = recipe.date_modified
-
                 return jsonify(results), 200
 
     return jsonify({"Message":"Invalid category or recipe id!"}), 400

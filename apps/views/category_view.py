@@ -85,10 +85,6 @@ def update_category(current_user, category_id):
         return jsonify({"message":"No category found!"}), 400
 
     if category_name and description and category.user_id == current_user.id:
-        # category.name = category_name
-        # category.description = description
-        # category.date_modified = datetime.datetime.utcnow()
-        # category.save()
         category.update(category_name, description)
         return jsonify({"message": "category {} was updated successfully".format(category.id)}), 201
     else:
@@ -187,8 +183,6 @@ def view_category_by_id(current_user, category_id):
                 return jsonify(results), 200
     else:
         return jsonify({"message":"invalid value!"}), 404
-
-
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
 @token_required
