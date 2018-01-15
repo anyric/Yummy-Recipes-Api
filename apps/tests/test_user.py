@@ -137,15 +137,15 @@ class UserTests(TestCase):
     def test_invalide_view_user(self):
         "function to test no  view_user found"
         response = self.test_client.get('/recipe/api/v1.0/users/view')
-        self.assertEquals(response.status_code, 404)
+        self.assertEquals(response.status_code, 400)
 
     def test_view_user_no_registered(self):
-        "function to test no no users found"
+        "function to test no users found"
         data = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NSwiZXhwIjoxNTE4MTcwNDA2fQ.H1zVV9_Gbkwj488nfT8D0HXTTsdrBO_e23onGIkswG4"
         token = {"x-access-token": data}
         response = self.test_client.get('/recipe/api/v1.0/users/view', \
                                         headers=token)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
 
     def test_delete_user_ok(self):
         """function to test user can be deleted"""
