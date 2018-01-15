@@ -44,18 +44,20 @@ def new_recipe(current_user):
         category = Category.get_category_by_id(category_id, current_user)
 
         if not category:
-            return jsonify({"message":"wrong category id or don't belong to you!"}), 404
-
-        recipe = Recipe.query.filter_by(name=recipe_name).first()
-        if not recipe:
-            recipe = Recipe(category_id, current_user.id, recipe_name, ingredients)
-            recipe.save()
-            return jsonify({"message": "recipe {} was added successfully!".\
-                            format(recipe.name)}), 201
+            response = jsonify({"message":"wrong category id or don't belong to you!"}), 404
         else:
-            return jsonify({"message":"Recipe name already exits"}), 400
+            recipe = Recipe.query.filter_by(name=recipe_name).first()
+            if not recipe:
+                recipe = Recipe(category_id, current_user.id, recipe_name, ingredients)
+                recipe.save()
+                response = jsonify({"message": "recipe {} was added successfully!".\
+                                format(recipe.name)}), 201
+            else:
+                response = jsonify({"message":"Recipe name {} already exits".\
+                                    format(recipe_name)}), 400
     else:
-        return jsonify({"message":"Invalid values"}), 400
+        response = jsonify({"message":"Invalid values"}), 400
+    return response
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['PUT'])
 @token_required
@@ -87,15 +89,17 @@ def update_recipe(current_user, recipe_id):
     recipe = Recipe.get_recipe_by_id(recipe_id, current_user)
 
     if not recipe:
-        return jsonify({"message":"No recipe with id {} was found or doesn't blongs to you!".\
+        response = jsonify({"message":"No recipe with id {} was found or doesn't blongs to you!".\
                         format(recipe_id)}), 404
-
-    if recipe_name and ingredients and not recipe.name == recipe_name:
-        recipe.update_recipe(recipe_name, ingredients)
-        return jsonify({"message": "recipe {} was updated successfully!".format(recipe.id)}), 201
     else:
-        return jsonify({"message": " recipes with name {} already exists!".\
-                        format(recipe_name)}), 404
+        if recipe_name and ingredients and not recipe.name == recipe_name:
+            recipe.update_recipe(recipe_name, ingredients)
+            response = jsonify({"message": "recipe {} was updated successfully!".\
+            format(recipe.id)}), 201
+        else:
+            response = jsonify({"message": " recipes with name {} already exists!".\
+                            format(recipe_name)}), 404
+    return response
 
 @app.route('/recipe/api/v1.0/category/recipes/', methods=['GET'])
 @token_required
@@ -131,22 +135,26 @@ def view_recipe(current_user):
         result = pagination_helper.paginate_query()
         if page and isinstance(page, int):
             if page > result['pages'] or page <= 0 or isinstance(page, str):
-                return jsonify({"message":"invalid search or page doesn't exist!"}), 404
-
-        if result['items'] > 0:
-            response = jsonify({'recipe':result}), 200
+                response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
+            else:
+                if result['items'] > 0:
+                    response = jsonify({'recipe':result}), 200
+                else:
+                    response = jsonify({"message": 'No record found'}), 404
         else:
-            response = jsonify({"message": 'No record found'}), 404
+            response = jsonify({"message":"invalid page number!"}), 404
     else:
         result = pagination_helper.paginate_query()
         if page and isinstance(page, int):
             if page > result['pages'] or page <= 0 or isinstance(page, str):
                 return jsonify({"message":"page doesn't exist!"}), 404
-
-        if result['items'] > 0:
-            response = jsonify({'recipe':result}), 200
+            else:
+                if result['items'] > 0:
+                    response = jsonify({'recipe':result}), 200
+                else:
+                    response = jsonify({"message":'No record found'}), 404
         else:
-            response = jsonify({"message":'No record found'}), 404
+            response = jsonify({"message":"invalid page number!"}), 404
     return response
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:category_id>', methods=['GET'])
@@ -173,21 +181,22 @@ def view_recipe_by_category(current_user, category_id):
         recipes = Recipe.get_recipe_category_id(category_id, current_user)
 
         if not recipes:
-            return jsonify({"message":'No recipe found'}), 404
-
-        results = []
-        for recipe in recipes:
-            obj = {
-                "id": recipe.id,
-                "name": recipe.name,
-                "ingredients": recipe.ingredients,
-                "category_id": recipe.category_id,
-                "date_modified": recipe.date_modified
-            }
-            results.append(obj)
-        return jsonify(results), 200
-
-    return jsonify({"message":"Invalid category id!"}), 400
+            response = jsonify({"message":'No recipe found'}), 404
+        else:
+            results = []
+            for recipe in recipes:
+                obj = {
+                    "id": recipe.id,
+                    "name": recipe.name,
+                    "ingredients": recipe.ingredients,
+                    "category_id": recipe.category_id,
+                    "date_modified": recipe.date_modified
+                }
+                results.append(obj)
+            response = jsonify(results), 200
+    else:
+        response = jsonify({"message":"Invalid category id!"}), 400
+    return response
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>/recipes/<int:recipe_id>', methods=['GET'])
 @token_required
@@ -211,24 +220,23 @@ def view_recipe_by_id(current_user, category_id, recipe_id):
       400:
         description: Bad Request
     """
-    if isinstance(recipe_id, int) and isinstance(category_id, int) and category_id > 0 and recipe_id > 0:
-        recipes = Recipe.query.filter(Recipe.category_id == category_id, Recipe.id == recipe_id, \
-        Recipe.user_id == current_user.id)
+    if isinstance(recipe_id, int) and isinstance(category_id, int) and \
+        category_id > 0 and recipe_id > 0:
+        recipe = Recipe.get_by_recipe_category_id(category_id, recipe_id, current_user)
 
-        if not recipes:
-            return jsonify({"message": "No record found!"}), 404
-
-        results = {}
-        for recipe in recipes:
-            if recipe:
-                results["id"] = recipe.id
-                results["name"] = recipe.name
-                results["category"] = recipe.category_id
-                results["ingredients"] = recipe.ingredients
-                results["date_modified"] = recipe.date_modified
-                return jsonify(results), 200
-
-    return jsonify({"Message":"Invalid category or recipe id!"}), 400
+        if not recipe:
+            response = jsonify({"message": "No record found!"}), 404
+        else:
+            results = {}
+            results["id"] = recipe.id
+            results["name"] = recipe.name
+            results["category"] = recipe.category_id
+            results["ingredients"] = recipe.ingredients
+            results["date_modified"] = recipe.date_modified
+            response = jsonify(results), 200
+    else:
+        response = jsonify({"Message":"Invalid category or recipe id!"}), 400
+    return response
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['DELETE'])
 @token_required
@@ -256,9 +264,12 @@ def delete_recipe(current_user, recipe_id):
         recipe = Recipe.get_recipe_by_id(recipe_id, current_user)
 
         if not recipe:
-            return jsonify({"message":"No recipe found!"}), 404
+            response = jsonify({"message":"No recipe found!"}), 404
         else:
             recipe.delete()
-            return jsonify({"message": "recipe {} deleted successfully!".format(recipe_id)}), 200
+            response = jsonify({"message": "recipe {} deleted successfully!".\
+                                format(recipe_id)}), 200
+    else:
+        response = jsonify({"message":"Invalid id"}), 400
 
-    return jsonify({"message":"Invalid id"}), 400
+    return response

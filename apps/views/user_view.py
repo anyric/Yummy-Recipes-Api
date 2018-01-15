@@ -33,7 +33,6 @@ def register_new_user():
     username = str(data['username']).strip()
     password = str(data['password']).strip()
 
-
     if name and email and username and password:
         if re.match(r'[a-zA-Z0-9.-_]+@[a-z]+\.[a-z]+', email):
             if password.isalpha():
@@ -53,7 +52,6 @@ def register_new_user():
                 return response
         else:
             return jsonify({"message":"wrong email format!"}), 400
-
     return jsonify({"message":"Please fill in all fields"}), 400
 
 @app.route('/recipe/api/v1.0/user/reset', methods=['PUT'])
@@ -97,7 +95,6 @@ def update_user_password():
                     response = jsonify({'message':"Password updated successfully!"}), 201
     else:
         response = jsonify({"message":"wrong email format!"}), 400
-
     return response
 
 @app.route('/recipe/api/v1.0/user/view', methods=['GET'])
@@ -167,12 +164,13 @@ def logout(current_user):
     token = request.headers['x-access-token']
     blacklisted = BlacklistTokens.query.filter_by(token=token).first()
     if blacklisted:
-        return jsonify({"message": "Token already blacklisted. Please login again!"}), 401
-
-    blacklisttoken = BlacklistTokens(token=token)
-    if blacklisttoken:
-        blacklisttoken.save()
-        return jsonify({"message": "Your loggout Successfully"}), 200
+        response = jsonify({"message": "Token already blacklisted. Please login again!"}), 401
+    else:
+        blacklisttoken = BlacklistTokens(token=token)
+        if blacklisttoken:
+            blacklisttoken.save()
+            response = jsonify({"message": "Your loggout Successfully"}), 200
+    return response
 
 @app.route('/recipe/api/v1.0/user/delete', methods=['DELETE'])
 @token_required

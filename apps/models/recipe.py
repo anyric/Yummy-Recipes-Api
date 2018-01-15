@@ -54,6 +54,13 @@ class Recipe(db.Model):
         recipe = Recipe.query.filter(Recipe.id == recipe_id, \
         Recipe.user_id == current_user.id).first()
         return recipe
+    @staticmethod
+    def get_by_recipe_category_id(category_id, recipe_id, current_user):
+        """method to retrieve all recipes of a given category and user id"""
+        recipe = Recipe.query.filter(Recipe.category_id == category_id, Recipe.id == recipe_id, \
+        Recipe.user_id == current_user.id).first()
+        return recipe
+
 
     def delete(self):
         """method to delete a recipe"""

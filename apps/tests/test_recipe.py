@@ -96,12 +96,31 @@ class RecipeTests(TestCase):
         self.create_new_category(user.id, category_name, description)
         #creating recipe of the category
         category = Category.query.filter_by(name=category_name).first()
-        #name = 'Black Tea'
         ingredients = 'Tea leave, sugar, hot water'
         data = {'category_id':category.id, 'user_id':user.id, 'name':'', 'ingredients':ingredients}
         response = self.test_client.post('/recipe/api/v1.0/category/recipes', headers=\
         self.get_header_token(), data=json.dumps(data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
+    def test_new_recipe_wrong_category_id(self):
+        """function to test create_new_recipe missing value"""
+        #registering recipe user
+        self.register_new_user(self.name, self.email, \
+        self.test_username, self.test_password)
+        user = Users.query.filter_by(username=self.test_username).first()
+        #creatng category for the user
+        category_name = 'local food'
+        description = 'list of local foods'
+        self.create_new_category(user.id, category_name, description)
+        #creating recipe of the category
+        # category = Category.query.filter_by(name=category_name).first()
+        name = 'black Tea'
+        ingredients = 'Tea leave, sugar, hot water'
+        data = {'category_id':2, 'user_id':user.id, 'name':name, \
+                'ingredients':ingredients}
+        response = self.test_client.post('/recipe/api/v1.0/category/recipes', headers=\
+        self.get_header_token(), data=json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
 
     def test_new_recipe_already_exists(self):
         """function to test create_new_recipe name already exists """
@@ -334,8 +353,8 @@ class RecipeTests(TestCase):
         self.get_header_token(), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
-    def test_view_recipe_no_category_no_recipe(self):
-        """function to test view_recipe with no category id and no recipe id"""
+    def test_view_recipe_category_no_recipe(self):
+        """function to test view_recipe with wrong recipe id"""
         #registering recipe user
         self.register_new_user(self.name, self.email, self.test_username, \
         self.test_password)
@@ -352,7 +371,7 @@ class RecipeTests(TestCase):
         self.create_new_recipe(category.id, user.id, name, ingredients)
         response = self.test_client.get('/recipe/api/v1.0/category/1/recipes/2', headers=\
         self.get_header_token(), content_type='application/json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
     def test_delete_recipe_by_id_bad_request(self):
         """function to test view_recipe with no category and recipe found"""
