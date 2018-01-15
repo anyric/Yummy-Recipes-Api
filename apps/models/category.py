@@ -47,6 +47,12 @@ class Category(db.Model):
                                         Category.user_id == current_user.id).first()
         return category
 
+    @staticmethod
+    def get_category_by_name(category_name, current_user):
+        """method to get a category by id"""
+        category = Category.query.filter(Category.name == category_name, \
+                                        Category.user_id == current_user.id).first()
+        return category
 
 class CategorySchema(ma.Schema):
     """class to create category model for pagination"""
