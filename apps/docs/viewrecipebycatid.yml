@@ -1,0 +1,16 @@
+function to view all recipes in a particular category for a user
+---
+tags:
+  - recipes
+parameters:
+  - in: path
+    name: category_id
+    description: Id of a category
+    required: true
+responses:
+  200:
+    description: Ok
+  204:
+    description: No content found
+  400:
+    description: Bad Request

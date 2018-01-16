@@ -1,6 +1,7 @@
 """module for recipe model view """
 import datetime
 from flask import request, jsonify
+from flasgger import swag_from
 
 from apps.models.category import Category
 from apps.models.recipe import Recipe, RecipeSchema
@@ -14,41 +15,22 @@ recipe_schema = RecipeSchema(many=True)
 
 @app.route('/recipe/api/v1.0/category/recipes', methods=['POST'])
 @token_required
+@swag_from("/apps/docs/newrecipe.yml")
 def new_recipe(current_user):
-    """function to create new recipe of a user
-    ---
-    tags:
-      - recipes
-    parameters:
-      - in: body
-        name: body
-        description: a dictionary containing details of a recipe to be added
-        required: true
-        schema:
-          id: recipe
-          example: {"name":"black tea", "ingredients":"tea leave, sugar,
-          hot water", "category_id":1}
-    responses:
-      201:
-        description: New record created successfully
-      400:
-        description: Bad Request
-    """
+    """function to create new recipe of a user"""
     data = request.get_json()
     recipe_name = str(data['name']).strip()
     ingredients = str(data['ingredients']).strip()
     category_id = data['category_id']
-
     if recipe_name and ingredients and category_id and isinstance(category_id, int) \
         and category_id > 0:
         category = Category.get_category_by_id(category_id, current_user)
-
         if not category:
             response = jsonify({"message":"wrong category id or don't belong to you!"}), 404
         else:
-            recipe = Recipe.query.filter_by(name=recipe_name).first()
+            recipe = Recipe.query.filter_by(name=recipe_name.lower()).first()
             if not recipe:
-                recipe = Recipe(category_id, current_user.id, recipe_name, ingredients)
+                recipe = Recipe(category_id, current_user.id, recipe_name.lower(), ingredients)
                 recipe.save()
                 response = jsonify({"message": "recipe {} was added successfully!".\
                                 format(recipe.name)}), 201
@@ -61,39 +43,18 @@ def new_recipe(current_user):
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['PUT'])
 @token_required
+@swag_from("/apps/docs/updaterecipe.yml")
 def update_recipe(current_user, recipe_id):
-    """function to update recipe of a user
-    ---
-    tags:
-      - recipes
-    parameters:
-      - in: path
-        name: recipe_id
-        description: Id of a recipe e.g 2
-        required: true
-      - in: body
-        name: body
-        description: a dictionary containing details of a recipe to be updated
-        required: true
-        schema:
-          id: update_recipe
-          example: {"name":"black tea", "ingredients":"tea leave, sugar, hot water"}
-    responses:
-      201:
-        description: Record updated successfully
-      400:
-        description: Bad Request
-    """
+    """function to update recipe of a user"""
     recipe_name = str(request.json.get('name', '')).strip()
     ingredients = str(request.json.get('ingredients', '')).strip()
     recipe = Recipe.get_recipe_by_id(recipe_id, current_user)
-
     if not recipe:
         response = jsonify({"message":"No recipe with id {} was found or doesn't blongs to you!".\
                         format(recipe_id)}), 404
     else:
         if recipe_name and ingredients and not recipe.name == recipe_name:
-            recipe.update_recipe(recipe_name, ingredients)
+            recipe.update_recipe(recipe_name.lower(), ingredients)
             response = jsonify({"message": "recipe {} was updated successfully!".\
             format(recipe.id)}), 201
         else:
@@ -103,31 +64,21 @@ def update_recipe(current_user, recipe_id):
 
 @app.route('/recipe/api/v1.0/category/recipes/', methods=['GET'])
 @token_required
+@swag_from("/apps/docs/viewrecipe.yml")
 def view_recipe(current_user):
-    """function to view paginated recipes of a user
-    ---
-    tags:
-      - recipes
-    responses:
-      200:
-        description: Ok
-      404:
-        description: Not Found
-    """
+    """function to view paginated recipes of a user"""
     pagination_helper = PaginationHelper(
         request,
         query=Recipe.query,
         resource_for_url='view_recipe',
         key_name='results',
         schema=recipe_schema)
-
     search = request.args.get('q', type=str)
     page = request.args.get('page', default=1, type=int)
-
     if not search is None:
         pagination_helper = PaginationHelper(
             request,
-            query=Recipe.query.filter(Recipe.name.contains(search), \
+            query=Recipe.query.filter(Recipe.name.contains(search.lower()), \
             Recipe.user_id == current_user.id),
             resource_for_url='view_recipe',
             key_name='results',
@@ -159,27 +110,11 @@ def view_recipe(current_user):
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:category_id>', methods=['GET'])
 @token_required
+@swag_from("/apps/docs/viewrecipebycatid.yml")
 def view_recipe_by_category(current_user, category_id):
-    """function to view all recipes in a particular category for a user
-    ---
-    tags:
-      - recipes
-    parameters:
-      - in: path
-        name: category_id
-        description: Id of a category
-        required: true
-    responses:
-      200:
-        description: Ok
-      204:
-        description: No content found
-      400:
-        description: Bad Request
-    """
+    """function to view all recipes in a particular category for a user"""
     if isinstance(category_id, int) and category_id > 0:
         recipes = Recipe.get_recipe_category_id(category_id, current_user)
-
         if not recipes:
             response = jsonify({"message":'No recipe found'}), 404
         else:
@@ -200,30 +135,12 @@ def view_recipe_by_category(current_user, category_id):
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>/recipes/<int:recipe_id>', methods=['GET'])
 @token_required
+@swag_from("/apps/docs/viewrecipebycatrecid.yml")
 def view_recipe_by_id(current_user, category_id, recipe_id):
-    """function to view a particular recipe in a category for a user by id
-    ---
-    tags:
-      - recipes
-    parameters:
-      - in: path
-        name: category_id
-        description: Id of a category
-        required: true
-      - in: path
-        name: recipe_id
-        description: Id of recipe
-        required: true
-    responses:
-      200:
-        description: Ok
-      400:
-        description: Bad Request
-    """
+    """function to view a particular recipe in a category for a user by id"""
     if isinstance(recipe_id, int) and isinstance(category_id, int) and \
         category_id > 0 and recipe_id > 0:
         recipe = Recipe.get_by_recipe_category_id(category_id, recipe_id, current_user)
-
         if not recipe:
             response = jsonify({"message": "No record found!"}), 404
         else:
@@ -240,29 +157,11 @@ def view_recipe_by_id(current_user, category_id, recipe_id):
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:recipe_id>', methods=['DELETE'])
 @token_required
+@swag_from("/apps/docs/deleterecipe.yml")
 def delete_recipe(current_user, recipe_id):
-    """function to delete a recipe from a category
-    ---
-    tags:
-      - recipes
-    parameters:
-      - in: path
-        name: recipe_id
-        description: Id of a recipe
-        required: true
-    security:
-      - TokenHeader: []
-    responses:
-      200:
-        description: Ok
-      204:
-        description: No content found
-      400:
-        description: Bad Request
-    """
+    """function to delete a recipe from a category"""
     if isinstance(recipe_id, int) and recipe_id > 0:
         recipe = Recipe.get_recipe_by_id(recipe_id, current_user)
-
         if not recipe:
             response = jsonify({"message":"No recipe found!"}), 404
         else:
@@ -271,5 +170,4 @@ def delete_recipe(current_user, recipe_id):
                                 format(recipe_id)}), 200
     else:
         response = jsonify({"message":"Invalid id"}), 400
-
     return response

@@ -1,0 +1,18 @@
+function to create new user
+---
+tags:
+  - users
+parameters:
+  - in: body
+    name: body
+    description: a dictionary of user details
+    required: true
+    schema:
+      id: register
+      example: {"name":"Richard Anyama", "email":"cooldev@example.com",
+      "username":"cooldev", "password":"cool1234"}
+responses:
+  201:
+    description: New user added successfully!
+  400:
+    description: Bad Request

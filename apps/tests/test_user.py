@@ -6,7 +6,6 @@ from apps import app, db
 from apps.utilities import config
 from apps.models.user import Users
 
-
 class UserTests(TestCase):
     """class to test user views"""
     def create_app(self):

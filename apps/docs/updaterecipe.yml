@@ -1,0 +1,21 @@
+function to update recipe of a user
+---
+tags:
+  - recipes
+parameters:
+  - in: path
+    name: recipe_id
+    description: Id of a recipe e.g 2
+    required: true
+  - in: body
+    name: body
+    description: a dictionary containing details of a recipe to be updated
+    required: true
+    schema:
+      id: update_recipe
+      example: {"name":"black tea", "ingredients":"tea leave, sugar, hot water"}
+responses:
+  201:
+    description: Record updated successfully
+  400:
+    description: Bad Request

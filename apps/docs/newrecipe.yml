@@ -1,0 +1,18 @@
+function to create new recipe of a user
+---
+tags:
+  - recipes
+parameters:
+  - in: body
+    name: body
+    description: a dictionary containing details of a recipe to be added
+    required: true
+    schema:
+      id: recipe
+      example: {"name":"black tea", "ingredients":"tea leave, sugar,
+      hot water", "category_id":1}
+responses:
+  201:
+    description: New record created successfully
+  400:
+    description: Bad Request

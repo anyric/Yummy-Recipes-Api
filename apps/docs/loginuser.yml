@@ -1,0 +1,18 @@
+function to login a user and get a token
+---
+tags:
+  - users
+parameters:
+  - in: body
+    name: body
+    description: a dictionay of username and password for verification
+    type: string
+    required: true
+    schema:
+      id: login
+      example: {"username":"cooldev", "password":"cool1234"}
+responses:
+  200:
+    description: Login successfully!
+  401:
+    description: Invalid username or password

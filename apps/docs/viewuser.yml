@@ -1,0 +1,9 @@
+function to view users list
+---
+tags:
+  - users
+responses:
+  200:
+    description: Ok
+  404:
+    description: Not Found
