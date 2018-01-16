@@ -13,6 +13,20 @@ from apps.utilities.paginate import PaginationHelper
 recipe_schema = RecipeSchema()
 recipe_schema = RecipeSchema(many=True)
 
+def display(page, result):
+    "function to display recipe"
+    if page and isinstance(page, int):
+        if page > result['pages'] or page <= 0 or isinstance(page, str):
+            response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
+        else:
+            if result['items'] > 0:
+                response = jsonify({'recipe':result}), 200
+            else:
+                response = jsonify({"message": 'No record found'}), 404
+    else:
+        response = jsonify({"message":"invalid page number!"}), 404
+    return response
+
 @app.route('/recipe/api/v1.0/category/recipes', methods=['POST'])
 @token_required
 @swag_from("/apps/docs/newrecipe.yml")
@@ -84,28 +98,10 @@ def view_recipe(current_user):
             key_name='results',
             schema=recipe_schema)
         result = pagination_helper.paginate_query()
-        if page and isinstance(page, int):
-            if page > result['pages'] or page <= 0 or isinstance(page, str):
-                response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
-            else:
-                if result['items'] > 0:
-                    response = jsonify({'recipe':result}), 200
-                else:
-                    response = jsonify({"message": 'No record found'}), 404
-        else:
-            response = jsonify({"message":"invalid page number!"}), 404
+        response = display(page, result)
     else:
         result = pagination_helper.paginate_query()
-        if page and isinstance(page, int):
-            if page > result['pages'] or page <= 0 or isinstance(page, str):
-                return jsonify({"message":"page doesn't exist!"}), 404
-            else:
-                if result['items'] > 0:
-                    response = jsonify({'recipe':result}), 200
-                else:
-                    response = jsonify({"message":'No record found'}), 404
-        else:
-            response = jsonify({"message":"invalid page number!"}), 404
+        response = display(page, result)
     return response
 
 @app.route('/recipe/api/v1.0/category/recipes/<int:category_id>', methods=['GET'])
