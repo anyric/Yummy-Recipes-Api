@@ -33,3 +33,17 @@ class PaginationHelper():
         return ({self.key_name: dumped_objects, 'previous': previous_page_url, \
                 'next': next_page_url, 'items': paginated_objects.total, \
                 'pages': paginated_objects.pages})
+    @staticmethod
+    def display(name, page, result):
+        """function to view category"""
+        if page and isinstance(page, int):
+            if page > result['pages'] or page <= 0 or isinstance(page, str):
+                response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
+            else:
+                if result['items'] > 0:
+                    response = jsonify({name:result}), 200
+                else:
+                    response = jsonify({"message": 'No record found'}), 404
+        else:
+            response = jsonify({"message":"invalid page number!"}), 404
+        return response
