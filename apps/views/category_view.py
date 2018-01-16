@@ -1,5 +1,4 @@
 """module for category view """
-import datetime
 from flask import request, jsonify
 from flasgger import swag_from
 
@@ -10,20 +9,6 @@ from apps.utilities.paginate import PaginationHelper
 
 category_schema = CategorySchema()
 category_schema = CategorySchema(many=True)
-
-def display(page, result):
-    """function to view category"""
-    if page and isinstance(page, int):
-        if page > result['pages'] or page <= 0 or isinstance(page, str):
-            response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
-        else:
-            if result['items'] > 0:
-                response = jsonify({'category':result}), 200
-            else:
-                response = jsonify({"message": 'No record found'}), 404
-    else:
-        response = jsonify({"message":"invalid page number!"}), 404
-    return response
 
 @app.route('/recipe/api/v1.0/category', methods=['POST'])
 @token_required
@@ -90,10 +75,10 @@ def view_category(current_user):
             key_name='results',
             schema=category_schema)
         result = pagination_helper.paginate_query()
-        response = display(page, result)
+        response = PaginationHelper.display("category", page, result)
     else:
         result = pagination_helper.paginate_query()
-        response = display(page, result)
+        response = PaginationHelper.display("category", page, result)
     return response
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['GET'])
