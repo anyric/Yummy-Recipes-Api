@@ -1,0 +1,21 @@
+function to update category for a user
+---
+tags:
+  - categories
+parameters:
+  - in: path
+    name: category_id
+    description: Id of a category e.g 1
+    required: true
+  - in: body
+    name: body
+    description: a dictionary containing details of a category to be updated
+    required: true
+    schema:
+      id: update_category
+      example: {"name":"black tea", "description":"a list of recipe categories"}
+responses:
+  201:
+    description: New record created successfully
+  400:
+    description: Bad Request

@@ -1,0 +1,11 @@
+function to view paginated recipe category of a user
+---
+tags:
+  - categories
+responses:
+  200:
+    description: Ok
+  204:
+    description: No Content
+  404:
+    description: Not Found

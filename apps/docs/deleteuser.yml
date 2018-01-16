@@ -1,0 +1,9 @@
+function to delete a user
+---
+tags:
+  - users
+responses:
+  200:
+    description: Ok
+  401:
+    description: Unauthorized user

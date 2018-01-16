@@ -1,0 +1,17 @@
+function to create new recipe category of a user
+---
+tags:
+  - categories
+parameters:
+  - in: body
+    name: body
+    description: a dictionary containing details of a category to be added
+    required: true
+    schema:
+      id: category
+      example: {"name":"break", "description":"a list of food for break fast"}
+responses:
+  201:
+    description: New record created successfully
+  400:
+    description: Bad Request

@@ -1,0 +1,16 @@
+function to delete a recipe from a category
+---
+tags:
+  - recipes
+parameters:
+  - in: path
+    name: recipe_id
+    description: Id of a recipe
+    required: true
+responses:
+  200:
+    description: Ok
+  204:
+    description: No content found
+  400:
+    description: Bad Request

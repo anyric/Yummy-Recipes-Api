@@ -1,0 +1,9 @@
+function to view paginated recipes of a user
+---
+tags:
+  - recipes
+responses:
+  200:
+    description: Ok
+  404:
+    description: Not Found

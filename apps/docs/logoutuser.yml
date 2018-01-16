@@ -1,0 +1,7 @@
+function to logout users
+---
+tags:
+  - users
+responses:
+  200:
+    description: Ok

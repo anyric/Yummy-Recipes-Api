@@ -1,0 +1,14 @@
+function to view a recipe category of a user by category id
+---
+tags:
+  - categories
+parameters:
+  - in: path
+    name: category_id
+    description: Id of a category e.g 2
+    required: true
+responses:
+  200:
+    description: Ok
+  404:
+    description: Not Found
