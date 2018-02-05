@@ -13,7 +13,7 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     """Configurations for Development."""
-    DEBUG = True
+    DEBUG = False
 
 class TestingConfig(Config):
     """Configurations for test database."""
@@ -23,11 +23,11 @@ class TestingConfig(Config):
 
 class StagingConfig(Config):
     """Configurations for Staging."""
-    DEBUG = True
+    DEBUG = False
 
 class ProductionConfig(Config):
     """Configurations for Production."""
-    DEBUG = True
+    DEBUG = False
     TESTING = False
 
 app_config = {
