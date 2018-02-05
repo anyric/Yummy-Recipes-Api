@@ -6,8 +6,10 @@ from flasgger import swag_from
 from apps.models.user import Users, BlacklistTokens
 from apps import app
 from apps.utilities.decode_token import token_required
+   
 
 @app.route('/recipe/api/v1.0/user/register', methods=['POST'])
+@swag_from("/apps/docs/registeruser.yml")
 def register_new_user():
     """function to create new user"""
     data = request.get_json()

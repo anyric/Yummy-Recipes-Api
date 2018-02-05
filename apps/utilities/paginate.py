@@ -36,7 +36,8 @@ class PaginationHelper():
     @staticmethod
     def display(name, page, result):
         """function to view category"""
-        if page and isinstance(page, int):
+        if page and not isinstance(page, str):
+            print(page)
             if page > result['pages'] or page <= 0 or isinstance(page, str):
                 response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
             else:

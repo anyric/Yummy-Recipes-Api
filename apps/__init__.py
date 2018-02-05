@@ -1,5 +1,5 @@
 """module to initialize the app"""
-from flask import Flask
+from flask import Flask, redirect
 from flask_marshmallow import Marshmallow
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
@@ -55,6 +55,9 @@ def wrongRequestMethod(error):
 def serverDown(error):
     """function to handle internal server errors"""
     return jsonify({"message":"server down!"}), 500
+@app.route("/")
+def index():
+    return redirect("/apidocs/")
 
 from apps.views.user_view import *
 from apps.views.recipe_view import *
