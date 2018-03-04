@@ -102,7 +102,7 @@ def logout(current_user):
         blacklisttoken = BlacklistTokens(token=token)
         if blacklisttoken:
             blacklisttoken.save()
-            response = jsonify({"message": "Your loggout Successfully"}), 200
+            response = jsonify({"message": "Your logout Successfully"}), 200
     return response
 
 @app.route('/recipe/api/v1.0/user/delete', methods=['DELETE'])

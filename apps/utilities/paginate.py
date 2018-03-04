@@ -32,13 +32,12 @@ class PaginationHelper():
         dumped_objects = self.schema.dump(objects, many=True).data
         return ({self.key_name: dumped_objects, 'previous': previous_page_url, \
                 'next': next_page_url, 'items': paginated_objects.total, \
-                'pages': paginated_objects.pages})
+                'pages': paginated_objects.pages, 'page':paginated_objects.page})
     @staticmethod
     def display(name, page, result):
         """function to view category"""
         if page and not isinstance(page, str):
-            print(page)
-            if page > result['pages'] or page <= 0 or isinstance(page, str):
+            if page > result['pages'] or isinstance(page, str):
                 response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
             else:
                 if result['items'] > 0:

@@ -5,10 +5,12 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 from flask_heroku import Heroku
 from flasgger import Swagger
+from flask_cors import CORS
 
 from apps.utilities import config
 
 app = Flask(__name__)
+CORS(app)
 config_name = config.DevelopmentConfig
 
 app.config['SWAGGER'] = {"swagger": "2.0",
