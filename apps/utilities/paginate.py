@@ -37,13 +37,13 @@ class PaginationHelper():
     def display(name, page, result):
         """function to view category"""
         if page and not isinstance(page, str):
-            if page > result['pages'] or isinstance(page, str):
+            if page > result['pages'] and result['pages'] > 0 and isinstance(page, str):
                 response = jsonify({"message":"invalid search or page doesn't exist!"}), 404
             else:
                 if result['items'] > 0:
                     response = jsonify({name:result}), 200
                 else:
-                    response = jsonify({"message": 'No record found'}), 404
+                    response = jsonify({"message": 'No {} found!'.format(name)}), 404
         else:
             response = jsonify({"message":"invalid page number!"}), 404
         return response
