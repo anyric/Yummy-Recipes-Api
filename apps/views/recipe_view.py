@@ -68,7 +68,7 @@ def view_recipe(current_user):
     """function to view paginated recipes of a user"""
     pagination_helper = PaginationHelper(
         request,
-        query=Recipe.query,
+        query=Recipe.query.filter(Recipe.user_id == current_user.id),
         resource_for_url='view_recipe',
         key_name='results',
         schema=recipe_schema)

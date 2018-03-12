@@ -53,6 +53,30 @@ def update_category(current_user, category_id):
                         ensure the category is yours!"}), 400
     return response
 
+@app.route('/recipe/api/v1.0/allcategory/', methods=['GET'])
+@token_required
+def view_all_category(current_user):
+    """function to view a recipe category of a user by category id"""
+    if current_user:
+        categorylists = Category.query.filter(Category.user_id == current_user.id).all()
+        if not categorylists:
+            response = jsonify({"message": "No category found!"}), 404
+        else:
+            results = []
+            for category in categorylists:
+                obj = {
+                    "id": category.id,
+                    "name": category.name,
+                    "user": category.user_id,
+                    "description": category.description,
+                    "date_modified": category.date_modified
+                }
+                results.append(obj)
+            response = jsonify(results), 200
+    else:
+        return jsonify({"message":"invalid value!"}), 404
+    return response
+
 @app.route('/recipe/api/v1.0/category/', methods=['GET'])
 @token_required
 @swag_from("/apps/docs/viewcategory.yml")
