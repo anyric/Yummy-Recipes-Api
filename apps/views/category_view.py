@@ -20,14 +20,14 @@ def create_new_category(current_user):
     description = data['description']
     if category_name and description and isinstance(category_name, str) and \
         isinstance(description, str):
-        cat_exits = Category.get_category_by_name(category_name, current_user)
+        cat_exits = Category.get_category_by_name(category_name.lower(), current_user)
         if cat_exits:
-            response = jsonify({"message":"Category {} already exits".format(category_name)}), 400
+            response = jsonify({"message":"Category {} already exits".format(category_name.title())}), 400
         else:
             category = Category(current_user.id, category_name.lower(), description)
             category.save()
-            response = jsonify({"message":"category {} was added successfully!".\
-                            format(category.name)}), 201
+            response = jsonify({"message":"Category {} was added Successfully!".\
+                            format(category.name.title())}), 201
     else:
         response = jsonify({"message":"Please enter all details!"}), 400
     return response
@@ -42,12 +42,12 @@ def update_category(current_user, category_id):
     description = str(data['description']).strip()
     category = Category.get_category_by_id(category_id, current_user)
     if not category:
-        response = jsonify({"message":"No category found!"}), 400
+        response = jsonify({"message":"No Category Found!"}), 400
     else:
         if category_name and description and category.user_id == current_user.id:
             category.update(category_name.lower(), description)
-            response = jsonify({"message": "category {} was updated successfully".\
-                                format(category.id)}), 201
+            response = jsonify({"message": "Category {} was updated Successfully!".\
+                                format(category.name.title())}), 201
         else:
             response = jsonify({"message": "Please enter new details and \
                         ensure the category is yours!"}), 400
@@ -60,13 +60,13 @@ def view_all_category(current_user):
     if current_user:
         categorylists = Category.query.filter(Category.user_id == current_user.id).all()
         if not categorylists:
-            response = jsonify({"message": "No category found!"}), 404
+            response = jsonify({"message": "No Category Found!"}), 404
         else:
             results = []
             for category in categorylists:
                 obj = {
                     "id": category.id,
-                    "name": category.name,
+                    "name": category.name.title(),
                     "user": category.user_id,
                     "description": category.description,
                     "date_modified": category.date_modified
@@ -74,7 +74,7 @@ def view_all_category(current_user):
                 results.append(obj)
             response = jsonify(results), 200
     else:
-        return jsonify({"message":"invalid value!"}), 404
+        return jsonify({"message":"Invalid Value!"}), 404
     return response
 
 @app.route('/recipe/api/v1.0/category/', methods=['GET'])
@@ -114,17 +114,17 @@ def view_category_by_id(current_user, category_id):
         categorylists = Category.get_category_by_id(category_id, current_user)
 
         if not categorylists:
-            response = jsonify({"message": "No category found!"}), 404
+            response = jsonify({"message": "No Category Found!"}), 404
         else:
             results = {}
             results["id"] = categorylists.id
-            results["name"] = categorylists.name
+            results["name"] = categorylists.name.title()
             results["user"] = categorylists.user_id
             results["description"] = categorylists.description
             results["date_modified"] = categorylists.date_modified
             response = jsonify(results), 200
     else:
-        return jsonify({"message":"invalid value!"}), 404
+        return jsonify({"message":"Invalid Value!"}), 404
     return response
 
 @app.route('/recipe/api/v1.0/category/<int:category_id>', methods=['DELETE'])
@@ -136,11 +136,11 @@ def delete_category(current_user, category_id):
         category = Category.get_category_by_id(category_id, current_user)
 
         if not category:
-            response = jsonify({"message":"No category found!"}), 404
+            response = jsonify({"message":"No Category Found!"}), 404
         else:
             category.delete()
-            response = jsonify({"message": "category {} was deleted successfully".\
-                            format(category.name)}), 200
+            response = jsonify({"message": "Category {} was deleted Successfully".\
+                            format(category.name.title())}), 200
     else:
-        response = jsonify({"message":"Invalid category id"}), 404
+        response = jsonify({"message":"Invalid Category ID"}), 404
     return response
