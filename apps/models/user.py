@@ -1,4 +1,5 @@
 """ module to manage users"""
+from flask_bcrypt import Bcrypt
 import datetime
 import jwt
 from apps import db, app
@@ -17,7 +18,17 @@ class Users(db.Model):
         self.name = name
         self.email = email
         self.username = username
-        self.password = password
+        self.password = Bcrypt().generate_password_hash(password).decode()
+
+    def verifypassword(self, password):
+        """method to verify user password"""
+        return Bcrypt().check_password_hash(self.password, password)
+
+    @staticmethod
+    def password_hash(password):
+        """method to hash provided password"""
+        password = Bcrypt().generate_password_hash(password).decode()
+        return password
 
     def save(self):
         """method to store new user"""

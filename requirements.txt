@@ -18,3 +18,4 @@ pipenv==9.0.1
 requests==2.18.4
 SQLAlchemy==1.1.15
 flask_cors==3.0.3
+Flask-Bcrypt==0.7.1

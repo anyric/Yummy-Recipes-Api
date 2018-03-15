@@ -81,8 +81,8 @@ def login_user():
     if not username or not password:
         return make_response('Invalid Username or Password', 400, \
                                 {'WWW-Authentication' : 'Basic realm="Login required!'})
-    user = Users.query.filter(Users.username == username, Users.password == password).first()
-    if user:
+    user = Users.query.filter_by(username=username).first()
+    if user and user.verifypassword:
         token = BlacklistTokens.generate_token(user.id)
         response = jsonify({'token': token.decode('UTF-8')}), 200
     else:

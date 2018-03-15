@@ -20,7 +20,7 @@ def create_new_category(current_user):
     description = data['description']
     if category_name and description and isinstance(category_name, str) and \
         isinstance(description, str):
-        cat_exits = Category.get_category_by_name(category_name, current_user)
+        cat_exits = Category.get_category_by_name(category_name.lower(), current_user)
         if cat_exits:
             response = jsonify({"message":"Category {} already exits".format(category_name.title())}), 400
         else:
