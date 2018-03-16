@@ -15,7 +15,7 @@ class Recipe(db.Model):
     name = db.Column(db.String(100), nullable=False)
     ingredients = db.Column(db.String(500), nullable=False)
     category_id = db.Column('category_id', db.Integer, db.ForeignKey('category.id', ondelete='CASCADE'))
-    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
     date_modified = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, category_id, user_id, name, incredients):
