@@ -20,14 +20,14 @@ def create_new_category(current_user):
     description = data['description']
     if category_name and description and isinstance(category_name, str) and \
         isinstance(description, str):
-        cat_exits = Category.get_category_by_name(category_name.lower(), current_user)
+        cat_exits = Category.get_category_by_name(category_name, current_user)
         if cat_exits:
-            response = jsonify({"message":"Category {} already exits".format(category_name.title())}), 400
+            response = jsonify({"message":"Category {} already exits".format(category_name)}), 400
         else:
-            category = Category(current_user.id, category_name.lower(), description)
+            category = Category(current_user.id, category_name, description)
             category.save()
             response = jsonify({"message":"Category {} was added Successfully!".\
-                            format(category.name.title())}), 201
+                            format(category.name)}), 201
     else:
         response = jsonify({"message":"Please enter all details!"}), 400
     return response
@@ -45,9 +45,9 @@ def update_category(current_user, category_id):
         response = jsonify({"message":"No Category Found!"}), 400
     else:
         if category_name and description and category.user_id == current_user.id:
-            category.update(category_name.lower(), description)
+            category.update(category_name, description)
             response = jsonify({"message": "Category {} was updated Successfully!".\
-                                format(category.name.title())}), 201
+                                format(category.name)}), 201
         else:
             response = jsonify({"message": "Please enter new details and \
                         ensure the category is yours!"}), 400
@@ -94,7 +94,7 @@ def view_category(current_user):
         pagination_helper = PaginationHelper(
             request,
             query=Category.query.filter(Category.user_id == current_user.id, \
-            Category.name.contains(search.lower())),
+            Category.name.ilike("%" + search + "%")),
             resource_for_url='view_category',
             key_name='results',
             schema=category_schema)
@@ -118,7 +118,7 @@ def view_category_by_id(current_user, category_id):
         else:
             results = {}
             results["id"] = categorylists.id
-            results["name"] = categorylists.name.title()
+            results["name"] = categorylists.name
             results["user"] = categorylists.user_id
             results["description"] = categorylists.description
             results["date_modified"] = categorylists.date_modified
@@ -140,7 +140,7 @@ def delete_category(current_user, category_id):
         else:
             category.delete()
             response = jsonify({"message": "Category {} was deleted Successfully".\
-                            format(category.name.title())}), 200
+                            format(category.name)}), 200
     else:
         response = jsonify({"message":"Invalid Category ID"}), 404
     return response

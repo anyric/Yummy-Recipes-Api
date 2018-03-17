@@ -50,7 +50,7 @@ class Category(db.Model):
     @staticmethod
     def get_category_by_name(category_name, current_user):
         """method to get a category by id"""
-        category = Category.query.filter(Category.name == category_name, \
+        category = Category.query.filter(Category.name.ilike("%" + category_name + "%"), \
                                         Category.user_id == current_user.id).first()
         return category
 

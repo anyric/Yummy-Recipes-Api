@@ -2,6 +2,7 @@
 import re
 from flask import request, jsonify, g, make_response, json
 from flasgger import swag_from
+from flask_bcrypt import Bcrypt
 
 from apps.models.user import Users, BlacklistTokens
 from apps import app
@@ -55,7 +56,7 @@ def update_user_password():
                 response = jsonify({"message":"New password can't be the same as old password"}), 400
             else:
                 if user_exit:
-                    user_exit.password = new_password
+                    user_exit.password = Bcrypt().generate_password_hash(new_password).decode()
                     user_exit.save()
                     response = jsonify({'message':"Password Updated Successfully!"}), 201
     else:
