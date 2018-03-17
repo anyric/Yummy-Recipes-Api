@@ -2,6 +2,7 @@
 import re
 from flask import request, jsonify, g, make_response, json
 from flasgger import swag_from
+from flask_bcrypt import Bcrypt
 
 from apps.models.user import Users, BlacklistTokens
 from apps import app
