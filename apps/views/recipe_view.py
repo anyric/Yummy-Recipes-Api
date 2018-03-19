@@ -52,7 +52,7 @@ def update_recipe(current_user, recipe_id):
         response = jsonify({"message":"No Recipe with ID {} was found or doesn't blongs to you!".\
                         format(recipe_name)}), 404
     else:
-        if recipe_name and ingredients and not recipe.name == recipe_name:
+        if recipe_name and ingredients:
             recipe.update_recipe(recipe_name, ingredients)
             response = jsonify({"message": "Recipe {} was updated Successfully!".\
             format(recipe.name)}), 201
