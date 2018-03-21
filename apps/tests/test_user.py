@@ -223,4 +223,5 @@ class UserTests(TestCase):
         headers=self.get_header_token(), content_type='application/json')
         response = self.client.post('/recipe/api/v1.0/user/logout', \
         headers=self.get_header_token(), content_type='application/json')
+        response_data = json.dumps(response.get_data(as_text=True))
         self.assertEqual(response.status_code, 401)

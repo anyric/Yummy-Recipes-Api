@@ -1,6 +1,7 @@
 """module for recipe model view """
 from flask import request, jsonify
 from flasgger import swag_from
+from sqlalchemy import func
 
 from apps.models.category import Category
 from apps.models.recipe import Recipe, RecipeSchema
@@ -27,7 +28,8 @@ def new_recipe(current_user):
         if not category:
             response = jsonify({"message":"Wrong Category ID or don't belong to you!"}), 404
         else:
-            recipe = Recipe.query.filter_by(name=recipe_name).first()
+            recipe = Recipe.query.filter(Recipe.name.ilike("%" + recipe_name + "%"),\
+            Recipe.user_id==current_user.id).first()
             if not recipe:
                 recipe = Recipe(category_id, current_user.id, recipe_name, ingredients)
                 recipe.save()
