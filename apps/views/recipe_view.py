@@ -1,7 +1,6 @@
 """module for recipe model view """
 from flask import request, jsonify
 from flasgger import swag_from
-from sqlalchemy import func
 
 from apps.models.category import Category
 from apps.models.recipe import Recipe, RecipeSchema
